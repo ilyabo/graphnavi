@@ -10,7 +10,7 @@ import {
 import React, { useCallback, useEffect, useState } from "react";
 import { PlayIcon } from "@heroicons/react/solid";
 import { useDuckConn } from "../lib/useDuckConn";
-import { Mosaic } from "react-mosaic-component";
+import { Mosaic, MosaicNode } from "react-mosaic-component";
 import { DownloadIcon } from "@chakra-ui/icons";
 import { csvFormat } from "d3-dsv";
 import { saveAs } from "file-saver";
@@ -30,6 +30,12 @@ const SqlEditor: React.FC<Props> = (props) => {
   const [results, setResults] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const [mosaicState, setMosaicState] = useState<MosaicNode<string> | null>({
+    direction: "row",
+    first: "queryTextarea",
+    second: "resultsBox",
+    splitPercentage: 30,
+  });
 
   const handleRun = async () => {
     const conn = duckConn.conn;
@@ -145,12 +151,8 @@ const SqlEditor: React.FC<Props> = (props) => {
               {views[id]}
             </Box>
           )}
-          initialValue={{
-            direction: "row",
-            first: "queryTextarea",
-            second: "resultsBox",
-            splitPercentage: 30,
-          }}
+          value={mosaicState}
+          onChange={setMosaicState}
         />
       </Flex>
     </Flex>
