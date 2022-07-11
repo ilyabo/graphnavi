@@ -10,7 +10,6 @@ import {
   HStack,
   Icon,
   Text,
-  Tooltip,
   VStack,
 } from "@chakra-ui/react";
 import { DocumentAddIcon } from "@heroicons/react/solid";
@@ -138,13 +137,14 @@ const CreateTableDropzone: FC<Props> = (props) => {
   };
 
   const handleCustomColumnChange = (column: CustomOutputColumn) => {
-    onChange({
-      ...value,
-      customOutputColumns: {
-        ...value.customOutputColumns,
-        [column.inputColumn]: column,
-      },
-    });
+    if (value)
+      onChange({
+        ...value,
+        customOutputColumns: {
+          ...value.customOutputColumns,
+          [column.inputColumn]: column,
+        },
+      });
   };
 
   const handleDrop = async (files: File[]) => {
@@ -158,15 +158,6 @@ const CreateTableDropzone: FC<Props> = (props) => {
     maxFiles: 1,
     multiple: false,
   });
-
-  const requiredColumns = useMemo(
-    () => outputColumnSpecs.filter((c) => c.required),
-    [outputColumnSpecs]
-  );
-  const optionalColumns = useMemo(
-    () => outputColumnSpecs.filter((c) => !c.required),
-    [outputColumnSpecs]
-  );
 
   const activeBg = "gray.700";
   const borderColor = isInvalid
@@ -206,7 +197,7 @@ const CreateTableDropzone: FC<Props> = (props) => {
               leftIcon={<CloseIcon w={1.5} h={1.5} />}
               onClick={handleReset}
             >
-              Delete
+              Remove
             </Button>
           </Box>
 
@@ -258,9 +249,10 @@ const CreateTableDropzone: FC<Props> = (props) => {
 };
 
 async function maybeDropTable(
-  value: CreateTableDropzoneResult,
-  duckConn: DuckConn
+  value?: CreateTableDropzoneResult,
+  duckConn?: DuckConn
 ) {
+  if (!duckConn) return;
   const { inputFileName, inputTableName } = value || {};
   if (inputFileName) {
     await duckConn.db.dropFile(inputFileName);

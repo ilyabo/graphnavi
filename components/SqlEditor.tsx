@@ -4,62 +4,55 @@ import {
   Flex,
   HStack,
   Icon,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  Progress,
   Spacer,
-  Text,
   Textarea,
-  VStack,
 } from "@chakra-ui/react";
 import React, { useState } from "react";
 import { PlayIcon } from "@heroicons/react/solid";
 import { useDuckConn } from "../lib/useDuckConn";
 import { Mosaic } from "react-mosaic-component";
 import { DownloadIcon } from "@chakra-ui/icons";
+import { csvFormat } from "d3-dsv";
+import { saveAs } from "file-saver";
 
 export interface Props {
-  schema: string;
+  tableName: string;
   isOpen: boolean;
   onClose: () => void;
 }
 
 const SqlEditor: React.FC<Props> = (props) => {
-  const { schema, isOpen, onClose } = props;
+  const { tableName, isOpen, onClose } = props;
   const duckConn = useDuckConn();
 
-  const [query, setQuery] = useState(`SELECT 
-  o.name as origin_name,
-  d.name as dest_name,
-  f.*
-FROM 
-  flows f
-  JOIN locations o ON f.origin = o.id
-  JOIN locations d ON f.dest = d.id
-LIMIT 10
-`);
+  const [query, setQuery] = useState(`SELECT count(*) FROM ${tableName}`);
   const [results, setResults] = useState("");
   const handleRun = async () => {
     const conn = duckConn.conn;
     try {
-      await conn.query(`SET search_path = ${schema}`);
+      // await conn.query(`SET search_path = ${schema}`);
       const results = await conn.query(query);
-      await conn.query(`SET search_path = main`);
+      // await conn.query(`SET search_path = main`);
       console.log(results);
-      setResults(JSON.stringify(results.toArray(), null, 2));
+      setResults(csvFormat(results.toArray()));
     } catch (e) {
       console.error(e);
       // TODO: set error state
     }
   };
+
+  const handleDownload = () => {
+    const blob = new Blob([results], {
+      type: "text/plain;charset=utf-8",
+    });
+    saveAs(blob, `duckquack-${tableName}.csv`);
+  };
+
   const views: { [viewId: string]: JSX.Element } = {
     queryTextarea: (
       <Textarea
+        fontFamily={"monospace"}
+        fontSize={"sm"}
         flex="1 0 auto"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
@@ -81,69 +74,48 @@ LIMIT 10
         fontSize="xs"
       >
         <Box position={"absolute"}>
-          <pre>{results}</pre>
+          <pre style={{ fontFamily: "monospace" }}>{results}</pre>
         </Box>
       </Box>
     ),
   };
 
   return (
-    <Modal
-      isCentered
-      isOpen={isOpen}
-      onClose={onClose}
-      closeOnOverlayClick={false}
-      size={"full"}
-    >
-      <ModalOverlay />
-      <ModalContent>
-        <ModalBody display="flex" alignItems="stretch" px={3} pt={3} pb={1}>
-          <Flex
-            alignItems="stretch"
-            width="100%"
-            flexDirection="column"
-            gap={2}
+    <Flex alignItems="stretch" px={3} pt={3} pb={1} flexGrow={1}>
+      <Flex alignItems="stretch" width="100%" flexDirection="column" gap={2}>
+        <HStack ml={1}>
+          <Button
+            size={"sm"}
+            leftIcon={<Icon as={PlayIcon} h={5} w={5} />}
+            onClick={handleRun}
           >
-            <ModalCloseButton />
-            <HStack ml={1} mr={10}>
-              <Button
-                size={"sm"}
-                leftIcon={<Icon as={PlayIcon} h={5} w={5} />}
-                onClick={handleRun}
-              >
-                Run
-              </Button>
-              {/*<Spacer />*/}
-              <Button
-                disabled={true}
-                size={"sm"}
-                leftIcon={<Icon as={DownloadIcon} h={5} w={5} />}
-                onClick={console.log}
-              >
-                Export
-              </Button>
-            </HStack>
-            <Mosaic<string>
-              renderTile={(id, path) => (
-                <Box
-                  backgroundColor={"primary"}
-                  borderRadius="md"
-                  overflow="hidden"
-                >
-                  {views[id]}
-                </Box>
-              )}
-              initialValue={{
-                direction: "row",
-                first: "queryTextarea",
-                second: "resultsBox",
-                splitPercentage: 30,
-              }}
-            />
-          </Flex>
-        </ModalBody>
-      </ModalContent>
-    </Modal>
+            Run
+          </Button>
+          <Spacer />
+          <Button
+            disabled={!results}
+            size={"sm"}
+            leftIcon={<Icon as={DownloadIcon} h={5} w={5} />}
+            onClick={handleDownload}
+          >
+            Download
+          </Button>
+        </HStack>
+        <Mosaic<string>
+          renderTile={(id, path) => (
+            <Box borderRadius="md" overflow="hidden">
+              {views[id]}
+            </Box>
+          )}
+          initialValue={{
+            direction: "row",
+            first: "queryTextarea",
+            second: "resultsBox",
+            splitPercentage: 30,
+          }}
+        />
+      </Flex>
+    </Flex>
   );
 };
 

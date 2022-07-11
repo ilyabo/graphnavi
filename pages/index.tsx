@@ -32,6 +32,15 @@ const Home: NextPage = () => {
     setMounted(true);
   }, []);
 
+  useEffect(() => {
+    if (value) {
+      sqlEditor.onOpen();
+    } else {
+      sqlEditor.onClose();
+    }
+  }, [value]);
+
+  console.log(value);
   if (!mounted) {
     return null;
   }
@@ -44,54 +53,75 @@ const Home: NextPage = () => {
       </Head>
 
       <Flex
-        as={"header"}
-        p={5}
-        mx={"auto"}
-        // maxW={"6xl"}
+        position={"absolute"}
+        direction={"column"}
+        top={0}
+        left={0}
+        width={"100vw"}
+        height={"100vh"}
       >
-        <Flex direction={"column"}>
-          <Heading fontSize="xl">Duckquack</Heading>
-          <Text fontSize="xs">Drop CSV and run SQL</Text>
-        </Flex>
-        <Spacer />
-        <a
-          href="https://www.duckdb.org"
-          target="_blank"
-          rel="noopener noreferrer"
+        <Flex
+          width={"100%"}
+          as={"header"}
+          px={5}
+          pt={5}
+          mx={"auto"}
+          // maxW={"6xl"}
         >
-          <Flex alignItems="center" gap={2}>
-            <Text>Powered by DuckDB</Text>
-            <Image src="/duckdb.svg" alt="DuckDB Logo" width={30} height={30} />
+          <Flex direction={"column"}>
+            <Heading fontSize="2xl">Duckquack</Heading>
+            {/*More ideas: sqrescue  resql.dev */}
+            <Text fontSize="xs">Drop CSV and run SQL</Text>
           </Flex>
-        </a>
+          <Spacer />
+          <a
+            href="https://www.duckdb.org"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Flex alignItems="center" gap={2}>
+              <Text>Powered by DuckDB</Text>
+              <Image
+                src="/duckdb.svg"
+                alt="DuckDB Logo"
+                width={30}
+                height={30}
+              />
+            </Flex>
+          </a>
+        </Flex>
+
+        <Flex as={"main"} w={"100vw"} height={"100%"}>
+          <Flex p={5}>
+            <Suspense fallback={<div>Loading…</div>}>
+              <CreateTableDropzone
+                value={value}
+                outputColumnSpecs={[]}
+                allowCustomColumns={true}
+                onTableCreated={(inputTableName: string, result) => {
+                  console.log(inputTableName, result);
+                  setValue(result);
+                }}
+                onChange={(result) => {
+                  console.log("onChange", result);
+                }}
+                onReset={() => {
+                  console.log("onReset");
+                }}
+                onError={(message) => console.log("onError", message)}
+              />
+            </Suspense>
+          </Flex>
+
+          {sqlEditor.isOpen && value?.inputTableName ? (
+            <SqlEditor
+              tableName={value?.inputTableName}
+              isOpen={true}
+              onClose={console.log}
+            />
+          ) : null}
+        </Flex>
       </Flex>
-
-      <VStack as={"main"}>
-        <Suspense fallback={<div>Loading…</div>}>
-          <CreateTableDropzone
-            value={value}
-            outputColumnSpecs={[]}
-            allowCustomColumns={true}
-            onTableCreated={(inputTableName: string, result) => {
-              console.log(inputTableName, result);
-              setValue(result);
-            }}
-            onChange={(result) => {
-              console.log("onChange", result);
-            }}
-            onReset={() => {
-              console.log("onReset");
-            }}
-            onError={(message) => console.log("onError", message)}
-          />
-        </Suspense>
-      </VStack>
-
-      <SqlEditor
-        schema={"public"}
-        isOpen={sqlEditor.isOpen}
-        onClose={sqlEditor.onClose}
-      />
     </ChakraProvider>
   );
 };
