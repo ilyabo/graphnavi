@@ -21,6 +21,8 @@ import CustomOutputColumnsTable, {
   CustomOutputColumn,
 } from "./CustomOutputColumnsTable";
 
+const DEFAULT_TABLE_NAME = "data";
+
 const ACCEPTED_FORMATS = [
   ".csv",
   // '.tsv',
@@ -275,7 +277,8 @@ async function createTableFromFile(
     await duckConn.db.dropFile(inputFileName);
     await duckConn.db.registerFileHandle(inputFileName, file);
 
-    const inputTableName = genRandomStr(5).toLowerCase();
+    // const inputTableName = genRandomStr(5).toLowerCase();
+    const inputTableName = DEFAULT_TABLE_NAME;
     await duckConn.conn.query(`
            CREATE TABLE ${inputTableName} AS SELECT * FROM '${inputFileName}'
         `);

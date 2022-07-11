@@ -26,7 +26,9 @@ const SqlEditor: React.FC<Props> = (props) => {
   const { tableName, isOpen, onClose } = props;
   const duckConn = useDuckConn();
 
-  const [query, setQuery] = useState(`SELECT count(*) FROM ${tableName}`);
+  const [query, setQuery] = useState(
+    localStorage.getItem("lastQuery") ?? `SELECT count(*) FROM ${tableName}`
+  );
   const [results, setResults] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -36,6 +38,11 @@ const SqlEditor: React.FC<Props> = (props) => {
     second: "resultsBox",
     splitPercentage: 30,
   });
+
+  const handleChangeQuery = (newQuery: string) => {
+    setQuery(newQuery);
+    localStorage.setItem("lastQuery", newQuery);
+  };
 
   const handleRun = useCallback(async () => {
     const conn = duckConn.conn;
@@ -90,7 +97,7 @@ const SqlEditor: React.FC<Props> = (props) => {
         fontSize={"sm"}
         flex="1 0 auto"
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={(e) => handleChangeQuery(e.target.value)}
         placeholder=""
         bg={"gray.200"}
         color={"gray.900"}
