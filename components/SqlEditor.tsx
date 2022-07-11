@@ -37,7 +37,7 @@ const SqlEditor: React.FC<Props> = (props) => {
     splitPercentage: 30,
   });
 
-  const handleRun = async () => {
+  const handleRun = useCallback(async () => {
     const conn = duckConn.conn;
     try {
       // await conn.query(`SET search_path = ${schema}`);
@@ -57,23 +57,23 @@ const SqlEditor: React.FC<Props> = (props) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [duckConn.conn, query]);
 
-  const handleKeyDown = useCallback((evt: Event) => {
-    if (
-      evt instanceof KeyboardEvent &&
-      evt.key === "Enter" &&
-      (evt.metaKey || evt.ctrlKey || evt.shiftKey)
-    ) {
-      handleRun();
-    }
-  }, []);
   useEffect(() => {
+    const handleKeyDown = (evt: Event) => {
+      if (
+        evt instanceof KeyboardEvent &&
+        evt.key === "Enter" &&
+        (evt.metaKey || evt.ctrlKey || evt.shiftKey)
+      ) {
+        handleRun();
+      }
+    };
     globalThis.addEventListener("keydown", handleKeyDown);
     return () => {
       globalThis.removeEventListener("keydown", handleKeyDown);
     };
-  }, [handleKeyDown]);
+  }, [handleRun]);
 
   const handleDownload = () => {
     const blob = new Blob([results], {
