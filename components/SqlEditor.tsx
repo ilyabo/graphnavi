@@ -7,13 +7,14 @@ import {
   Spacer,
   Textarea,
 } from "@chakra-ui/react";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { PlayIcon } from "@heroicons/react/solid";
 import { useDuckConn } from "../lib/useDuckConn";
 import { Mosaic } from "react-mosaic-component";
 import { DownloadIcon } from "@chakra-ui/icons";
 import { csvFormat } from "d3-dsv";
 import { saveAs } from "file-saver";
+import SpinnerPane from "./SpinnerPane";
 
 export interface Props {
   tableName: string;
@@ -27,18 +28,46 @@ const SqlEditor: React.FC<Props> = (props) => {
 
   const [query, setQuery] = useState(`SELECT count(*) FROM ${tableName}`);
   const [results, setResults] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+
   const handleRun = async () => {
     const conn = duckConn.conn;
     try {
       // await conn.query(`SET search_path = ${schema}`);
+      setLoading(true);
       const results = await conn.query(query);
       // await conn.query(`SET search_path = main`);
       setResults(csvFormat(results.toArray()));
+      setError(false);
     } catch (e) {
-      console.error(e);
+      let msg = e instanceof Error ? e.message : String(e);
+      const i = msg.indexOf("Query call stack");
+      if (i >= 0) msg = msg.substring(0, i);
+      // console.error(e);
+      setError(true);
+      setResults(msg);
       // TODO: set error state
+    } finally {
+      setLoading(false);
     }
   };
+
+  const handleKeyDown = useCallback((evt: Event) => {
+    if (
+      evt instanceof KeyboardEvent &&
+      evt.key === "Enter" &&
+      (evt.metaKey || evt.ctrlKey || evt.shiftKey)
+    ) {
+      handleRun();
+    }
+  }, []);
+  useEffect(() => {
+    globalThis.addEventListener("keydown", handleKeyDown);
+    return () => {
+      globalThis.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleKeyDown]);
 
   const handleDownload = () => {
     const blob = new Blob([results], {
@@ -51,6 +80,7 @@ const SqlEditor: React.FC<Props> = (props) => {
     queryTextarea: (
       <Textarea
         fontFamily={"monospace"}
+        isDisabled={loading}
         fontSize={"sm"}
         flex="1 0 auto"
         value={query}
@@ -71,10 +101,18 @@ const SqlEditor: React.FC<Props> = (props) => {
         overflow="auto"
         background={"gray.800"}
         fontSize="xs"
+        px={4}
+        py={2}
       >
-        <Box position={"absolute"}>
-          <pre style={{ fontFamily: "monospace" }}>{results}</pre>
-        </Box>
+        {loading ? (
+          <Flex position={"absolute"} w={"100%"} h={"100%"}>
+            <SpinnerPane />
+          </Flex>
+        ) : (
+          <Box position={"absolute"}>
+            <pre style={{ fontFamily: "monospace" }}>{results}</pre>
+          </Box>
+        )}
       </Box>
     ),
   };
@@ -84,6 +122,7 @@ const SqlEditor: React.FC<Props> = (props) => {
       <Flex alignItems="stretch" width="100%" flexDirection="column" gap={2}>
         <HStack ml={1}>
           <Button
+            isDisabled={loading}
             size={"sm"}
             leftIcon={<Icon as={PlayIcon} h={5} w={5} />}
             onClick={handleRun}
@@ -92,12 +131,12 @@ const SqlEditor: React.FC<Props> = (props) => {
           </Button>
           <Spacer />
           <Button
-            disabled={!results}
+            disabled={!results || loading || error}
             size={"sm"}
             leftIcon={<Icon as={DownloadIcon} h={5} w={5} />}
             onClick={handleDownload}
           >
-            Download
+            Download CSV
           </Button>
         </HStack>
         <Mosaic<string>

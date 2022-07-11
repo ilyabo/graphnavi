@@ -183,7 +183,6 @@ const CreateTableDropzone: FC<Props> = (props) => {
       minWidth={300}
       minHeight={200}
       justifyContent="center"
-      alignItems="center"
     >
       {value?.inputRowCount && value?.inputTableFields ? (
         <>
