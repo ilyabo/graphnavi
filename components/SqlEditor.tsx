@@ -33,7 +33,6 @@ const SqlEditor: React.FC<Props> = (props) => {
       // await conn.query(`SET search_path = ${schema}`);
       const results = await conn.query(query);
       // await conn.query(`SET search_path = main`);
-      console.log(results);
       setResults(csvFormat(results.toArray()));
     } catch (e) {
       console.error(e);
