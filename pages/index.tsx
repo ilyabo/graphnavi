@@ -14,12 +14,12 @@ import {
 import SqlEditor from "../components/SqlEditor";
 import "react-mosaic-component/react-mosaic-component.css";
 import theme from "../theme";
-import { CreateTableResult } from "../lib/duckdb";
+import { TableInfo } from "../lib/duckdb";
 import CsvDropzone from "../components/CsvDropzone";
 
 const Home: NextPage = () => {
   // const duckConn = useDuckConn();
-  const [value, setValue] = useState<CreateTableResult>();
+  const [value, setValue] = useState<TableInfo[]>([]);
   const [mounted, setMounted] = useState(false);
   const sqlEditor = useDisclosure();
 
@@ -91,12 +91,10 @@ const Home: NextPage = () => {
           <Flex p={5}>
             <Suspense fallback={<div>Loading…</div>}>
               <CsvDropzone
-                value={value}
-                outputColumnSpecs={[]}
-                allowCustomColumns={true}
+                tables={value}
                 onTableCreated={(inputTableName: string, result) => {
                   console.log(inputTableName, result);
-                  setValue(result);
+                  setValue([...value, result]);
                 }}
                 onChange={(result) => {
                   console.log("onChange", result);
@@ -109,13 +107,7 @@ const Home: NextPage = () => {
             </Suspense>
           </Flex>
 
-          {sqlEditor.isOpen && value?.inputTableName ? (
-            <SqlEditor
-              tableName={value?.inputTableName}
-              isOpen={true}
-              onClose={console.log}
-            />
-          ) : null}
+          <SqlEditor isOpen={true} onClose={console.log} />
         </Flex>
       </Flex>
     </ChakraProvider>

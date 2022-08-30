@@ -15,19 +15,20 @@ import { DownloadIcon } from "@chakra-ui/icons";
 import { csvFormat } from "d3-dsv";
 import { saveAs } from "file-saver";
 import SpinnerPane from "./SpinnerPane";
+import { genRandomStr } from "../lib/utils";
 
 export interface Props {
-  tableName: string;
   isOpen: boolean;
   onClose: () => void;
 }
 
 const SqlEditor: React.FC<Props> = (props) => {
-  const { tableName, isOpen, onClose } = props;
+  const { isOpen, onClose } = props;
   const duckConn = useDuckConn();
 
   const [query, setQuery] = useState(
-    localStorage.getItem("lastQuery") ?? `SELECT count(*) FROM ${tableName}`
+    localStorage.getItem("lastQuery") ?? ""
+    //`SELECT count(*) FROM ${tableName}`
   );
   const [results, setResults] = useState("");
   const [loading, setLoading] = useState(false);
@@ -86,7 +87,7 @@ const SqlEditor: React.FC<Props> = (props) => {
     const blob = new Blob([results], {
       type: "text/plain;charset=utf-8",
     });
-    saveAs(blob, `dndsql-${tableName}.csv`);
+    saveAs(blob, `dndsql-${genRandomStr(5)}.csv`);
   };
 
   const views: { [viewId: string]: JSX.Element } = {

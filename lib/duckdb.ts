@@ -1,24 +1,15 @@
 import { DuckConn, getColValAsNumber } from "./useDuckConn";
-import { CustomOutputColumn } from "../components/CustomOutputColumnsTable";
 
 export type TableField = { name: string; type: string };
 
-export type CreateTableResult = {
+export type TableInfo = {
   inputFileName?: string;
   inputTableName?: string;
   inputTableFields?: TableField[];
   inputRowCount?: number;
-  // outputRowCount?: number;
-  selectedColumns?: Record<string, string>;
-  customOutputColumns?: Record<string, CustomOutputColumn>;
 };
 
-const DEFAULT_TABLE_NAME = "data";
-
-export async function maybeDropTable(
-  value?: CreateTableResult,
-  duckConn?: DuckConn
-) {
+export async function maybeDropTable(value?: TableInfo, duckConn?: DuckConn) {
   if (!duckConn) return;
   const { inputFileName, inputTableName } = value || {};
   if (inputFileName) {
@@ -32,7 +23,7 @@ export async function maybeDropTable(
 export async function createTableFromFile(
   file: File,
   duckConn: DuckConn,
-  onTableCreated: (inputTableName: string, result: CreateTableResult) => void,
+  onTableCreated: (inputTableName: string, result: TableInfo) => void,
   onError: (message: string) => void
 ) {
   try {
@@ -41,10 +32,13 @@ export async function createTableFromFile(
     await duckConn.db.registerFileHandle(inputFileName, file);
 
     // const inputTableName = genRandomStr(5).toLowerCase();
-    const inputTableName = DEFAULT_TABLE_NAME;
+    const inputTableName = inputFileName
+      .replace(/\.[^\.]*$/, "")
+      .replace(/\W/g, "_");
+
     await duckConn.conn.query(`
-           CREATE TABLE ${inputTableName} AS SELECT * FROM '${inputFileName}'
-        `);
+       CREATE TABLE ${inputTableName} AS SELECT * FROM '${inputFileName}'
+    `);
 
     const res = await duckConn.conn.query(
       `SELECT count(*) FROM ${inputTableName}`
@@ -58,13 +52,12 @@ export async function createTableFromFile(
       type: String(row?.column_type),
     }));
 
-    const nextResult: CreateTableResult = {
+    const nextResult: TableInfo = {
       inputFileName,
       inputTableName,
       inputRowCount,
       // outputRowCount: undefined,
       inputTableFields,
-      selectedColumns: {},
     };
     // setResult(nextResult);
     onTableCreated(inputTableName, nextResult);

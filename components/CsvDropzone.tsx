@@ -1,30 +1,11 @@
-import React, { FC, useMemo } from "react";
+import React, { FC } from "react";
 import { useDropzone } from "react-dropzone";
 
-import {
-  Badge,
-  Box,
-  Button,
-  Center,
-  Grid,
-  HStack,
-  Icon,
-  Text,
-  VStack,
-} from "@chakra-ui/react";
+import { Flex, Grid, HStack, Icon, Text, VStack } from "@chakra-ui/react";
 import { DocumentAddIcon } from "@heroicons/react/solid";
-import { formatNumber } from "../lib/utils";
-import { CloseIcon } from "@chakra-ui/icons";
 import { useDuckConn } from "../lib/useDuckConn";
-import { InputColumnOption } from "./FieldSelect";
-import CustomOutputColumnsTable, {
-  CustomOutputColumn,
-} from "./CustomOutputColumnsTable";
-import {
-  createTableFromFile,
-  CreateTableResult,
-  maybeDropTable,
-} from "../lib/duckdb";
+import { createTableFromFile, TableInfo, maybeDropTable } from "../lib/duckdb";
+import FileCard from "./FileCard";
 
 const ACCEPTED_FORMATS = [
   ".csv",
@@ -34,80 +15,29 @@ const ACCEPTED_FORMATS = [
   // '.arrow',
 ];
 
-export type ColumnSpec = {
-  name: string;
-  type: "string" | "number" | "datetime";
-  comment?: string;
-  required?: boolean;
-  nameVariants?: string[];
-  // validate?: (
-  //   duckConn: DuckConn,
-  //   inputTableName: string,
-  //   columnName: string,
-  //   totalRowCount: number,
-  // ) => Promise<string | undefined>;
-};
-
 export type Props = {
-  value?: CreateTableResult;
-  allowCustomColumns: boolean;
-  outputColumnSpecs: ColumnSpec[];
+  tables?: TableInfo[];
   isInvalid?: boolean;
   onReset: () => void;
-  onChange: (result: CreateTableResult) => void;
-  onTableCreated: (inputTableName: string, result: CreateTableResult) => void;
+  onChange: (result: TableInfo) => void;
+  onTableCreated: (inputTableName: string, result: TableInfo) => void;
   onError: (message: string) => void;
 };
 
 const CsvDropzone: FC<Props> = (props) => {
-  const {
-    value,
-    outputColumnSpecs,
-    allowCustomColumns,
-    isInvalid,
-    onError,
-    onTableCreated,
-    onChange,
-    onReset,
-  } = props;
+  const { tables, isInvalid, onError, onTableCreated, onChange, onReset } =
+    props;
 
   const handleReset = async () => {
-    await maybeDropTable(value, duckConn);
+    // await maybeDropTable(tables, duckConn);
     // setResult(undefined);
     onReset();
   };
 
-  const allInputColumns: Array<InputColumnOption> = useMemo(() => {
-    if (!value?.inputTableFields) return [];
-    return value.inputTableFields.map((row: any) => ({
-      value: row.name,
-      row: row,
-    }));
-  }, [value?.inputTableFields]);
-
-  const unusedInputColumns: Array<InputColumnOption> = useMemo(() => {
-    if (!value?.inputTableFields) return [];
-    const usedCols = Object.values(value.selectedColumns || {});
-    return allInputColumns.filter(
-      (col) => !usedCols.includes((col as InputColumnOption).value)
-    );
-  }, [allInputColumns, value?.selectedColumns]);
-
   const duckConn = useDuckConn();
 
-  const handleCustomColumnChange = (column: CustomOutputColumn) => {
-    if (value)
-      onChange({
-        ...value,
-        customOutputColumns: {
-          ...value.customOutputColumns,
-          [column.inputColumn]: column,
-        },
-      });
-  };
-
   const handleDrop = async (files: File[]) => {
-    await maybeDropTable(value, duckConn);
+    // await maybeDropTable(value, duckConn);
     await createTableFromFile(files[0], duckConn, onTableCreated, onError);
   };
 
@@ -126,65 +56,37 @@ const CsvDropzone: FC<Props> = (props) => {
     : "gray.500";
 
   return (
-    <Center
+    <Flex
+      direction={"column"}
       color="gray.400"
       p={5}
       cursor="pointer"
       bg={isDragActive ? activeBg : "transparent"}
-      _hover={{ bg: value?.inputTableFields ? undefined : activeBg }}
+      _hover={{ bg: "gray.700" }}
       transition="background-color 0.2s ease"
       borderRadius={8}
-      border={`2px ${value?.inputRowCount ? "solid" : "dashed"}`}
+      border={`2px dashed`}
       borderColor={borderColor}
       {...getRootProps()}
       position={"relative"}
       height={"100%"}
-      minWidth={300}
-      minHeight={200}
-      justifyContent="center"
     >
-      {value?.inputRowCount && value?.inputTableFields ? (
-        <>
-          <Box position="absolute" top={1} right={1}>
-            <Button
-              color="gray.500"
-              _hover={{ color: "gray.300" }}
-              size="xs"
-              title="Cancel…"
-              variant="ghost"
-              leftIcon={<CloseIcon w={1.5} h={1.5} />}
-              onClick={handleReset}
-            >
-              Remove
-            </Button>
-          </Box>
-
-          <VStack gap={5} mt={4}>
-            <VStack>
-              <Text fontSize="sm" color="gray.100" maxWidth={400} noOfLines={1}>
-                {value.inputFileName}
-              </Text>
-              <HStack>
-                <Text fontSize="xs">Table name:</Text>
-                <Badge fontSize="xs">{value.inputTableName}</Badge>
-              </HStack>
-              <Text fontSize="sm">
-                {`${formatNumber(value.inputRowCount)} rows`}
-              </Text>
+      <>
+        <input {...getInputProps()} />
+        <Flex gap={2} direction={"column"} height={"100%"}>
+          {tables?.length ? (
+            <VStack gap={2}>
+              {tables.map((table, i) => (
+                <FileCard key={i} onReset={handleReset} value={table} />
+              ))}
             </VStack>
-            {allowCustomColumns ? (
-              <CustomOutputColumnsTable
-                inputColumns={unusedInputColumns}
-                customOutputColumns={value.customOutputColumns}
-                onColumnChange={handleCustomColumnChange}
-              />
-            ) : null}
-          </VStack>
-        </>
-      ) : (
-        <>
-          <input {...getInputProps()} />
-          <VStack gap={2}>
+          ) : null}
+          <Flex
+            direction={"column"}
+            height={"100%"}
+            alignItems={"center"}
+            justifyContent={"center"}
+          >
             <HStack>
               <Icon w={6} h={6} as={DocumentAddIcon} />
               <p>
@@ -199,10 +101,10 @@ const CsvDropzone: FC<Props> = (props) => {
               </Text>
               <Text fontSize="xs">{ACCEPTED_FORMATS.join(", ")}</Text>
             </Grid>
-          </VStack>
-        </>
-      )}
-    </Center>
+          </Flex>
+        </Flex>
+      </>
+    </Flex>
   );
 };
 
