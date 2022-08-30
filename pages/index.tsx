@@ -2,28 +2,24 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
 import { Suspense, useEffect, useState } from "react";
-import { getDuckConn, useDuckConn } from "../lib/useDuckConn";
-import CreateTableDropzone, {
-  CreateTableDropzoneResult,
-} from "../components/CreateTableDropzone";
+import { getDuckConn } from "../lib/useDuckConn";
 import {
-  Text,
-  Box,
   ChakraProvider,
   Flex,
   Heading,
-  HStack,
   Spacer,
-  VStack,
+  Text,
   useDisclosure,
 } from "@chakra-ui/react";
 import SqlEditor from "../components/SqlEditor";
 import "react-mosaic-component/react-mosaic-component.css";
 import theme from "../theme";
+import { CreateTableResult } from "../lib/duckdb";
+import CsvDropzone from "../components/CsvDropzone";
 
 const Home: NextPage = () => {
   // const duckConn = useDuckConn();
-  const [value, setValue] = useState<CreateTableDropzoneResult>();
+  const [value, setValue] = useState<CreateTableResult>();
   const [mounted, setMounted] = useState(false);
   const sqlEditor = useDisclosure();
 
@@ -94,7 +90,7 @@ const Home: NextPage = () => {
         <Flex as={"main"} w={"100vw"} height={"100%"}>
           <Flex p={5}>
             <Suspense fallback={<div>Loading…</div>}>
-              <CreateTableDropzone
+              <CsvDropzone
                 value={value}
                 outputColumnSpecs={[]}
                 allowCustomColumns={true}

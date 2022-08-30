@@ -13,15 +13,18 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { DocumentAddIcon } from "@heroicons/react/solid";
-import { formatNumber, genRandomStr } from "../lib/utils";
+import { formatNumber } from "../lib/utils";
 import { CloseIcon } from "@chakra-ui/icons";
-import { DuckConn, getColValAsNumber, useDuckConn } from "../lib/useDuckConn";
+import { useDuckConn } from "../lib/useDuckConn";
 import { InputColumnOption } from "./FieldSelect";
 import CustomOutputColumnsTable, {
   CustomOutputColumn,
 } from "./CustomOutputColumnsTable";
-
-const DEFAULT_TABLE_NAME = "data";
+import {
+  createTableFromFile,
+  CreateTableResult,
+  maybeDropTable,
+} from "../lib/duckdb";
 
 const ACCEPTED_FORMATS = [
   ".csv",
@@ -45,33 +48,18 @@ export type ColumnSpec = {
   // ) => Promise<string | undefined>;
 };
 
-export type TableField = { name: string; type: string };
-
-export type CreateTableDropzoneResult = {
-  inputFileName?: string;
-  inputTableName?: string;
-  inputTableFields?: TableField[];
-  inputRowCount?: number;
-  // outputRowCount?: number;
-  selectedColumns?: Record<string, string>;
-  customOutputColumns?: Record<string, CustomOutputColumn>;
-};
-
 export type Props = {
-  value?: CreateTableDropzoneResult;
+  value?: CreateTableResult;
   allowCustomColumns: boolean;
   outputColumnSpecs: ColumnSpec[];
   isInvalid?: boolean;
   onReset: () => void;
-  onChange: (result: CreateTableDropzoneResult) => void;
-  onTableCreated: (
-    inputTableName: string,
-    result: CreateTableDropzoneResult
-  ) => void;
+  onChange: (result: CreateTableResult) => void;
+  onTableCreated: (inputTableName: string, result: CreateTableResult) => void;
   onError: (message: string) => void;
 };
 
-const CreateTableDropzone: FC<Props> = (props) => {
+const CsvDropzone: FC<Props> = (props) => {
   const {
     value,
     outputColumnSpecs,
@@ -106,37 +94,6 @@ const CreateTableDropzone: FC<Props> = (props) => {
   }, [allInputColumns, value?.selectedColumns]);
 
   const duckConn = useDuckConn();
-
-  const handleSelectColumn = (
-    column: string,
-    inputFileColumn: string | undefined
-  ) => {
-    const { selectedColumns, customOutputColumns } = value || {};
-    let nextResult: CreateTableDropzoneResult;
-    if (inputFileColumn) {
-      // remove selected prop from custom columns
-      const { [column]: omitted, ...nextCustomColumns } =
-        customOutputColumns ?? {};
-      nextResult = {
-        ...value,
-        selectedColumns: {
-          ...selectedColumns,
-          [column]: inputFileColumn,
-        },
-        customOutputColumns: nextCustomColumns,
-      };
-    } else {
-      const newSelectedColumns = {
-        ...selectedColumns,
-      };
-      delete newSelectedColumns[column];
-      nextResult = {
-        ...value,
-        selectedColumns: newSelectedColumns,
-      };
-    }
-    onChange(nextResult);
-  };
 
   const handleCustomColumnChange = (column: CustomOutputColumn) => {
     if (value)
@@ -249,66 +206,4 @@ const CreateTableDropzone: FC<Props> = (props) => {
   );
 };
 
-async function maybeDropTable(
-  value?: CreateTableDropzoneResult,
-  duckConn?: DuckConn
-) {
-  if (!duckConn) return;
-  const { inputFileName, inputTableName } = value || {};
-  if (inputFileName) {
-    await duckConn.db.dropFile(inputFileName);
-  }
-  if (inputTableName) {
-    await duckConn.conn.query(`DROP TABLE IF EXISTS ${inputTableName};`);
-  }
-}
-
-async function createTableFromFile(
-  file: File,
-  duckConn: DuckConn,
-  onTableCreated: (
-    inputTableName: string,
-    result: CreateTableDropzoneResult
-  ) => void,
-  onError: (message: string) => void
-) {
-  try {
-    const inputFileName = file.name;
-    await duckConn.db.dropFile(inputFileName);
-    await duckConn.db.registerFileHandle(inputFileName, file);
-
-    // const inputTableName = genRandomStr(5).toLowerCase();
-    const inputTableName = DEFAULT_TABLE_NAME;
-    await duckConn.conn.query(`
-           CREATE TABLE ${inputTableName} AS SELECT * FROM '${inputFileName}'
-        `);
-
-    const res = await duckConn.conn.query(
-      `SELECT count(*) FROM ${inputTableName}`
-    );
-    const inputRowCount = getColValAsNumber(res, 0);
-    const tableMeta = await duckConn.conn.query(
-      `DESCRIBE TABLE ${inputTableName}`
-    );
-    const inputTableFields = Array.from(tableMeta).map((row) => ({
-      name: String(row?.column_name),
-      type: String(row?.column_type),
-    }));
-
-    const nextResult: CreateTableDropzoneResult = {
-      inputFileName,
-      inputTableName,
-      inputRowCount,
-      // outputRowCount: undefined,
-      inputTableFields,
-      selectedColumns: {},
-    };
-    // setResult(nextResult);
-    onTableCreated(inputTableName, nextResult);
-  } catch (e) {
-    console.error(e);
-    onError(e instanceof Error ? e.message : String(e));
-  }
-}
-
-export default CreateTableDropzone;
+export default CsvDropzone;
