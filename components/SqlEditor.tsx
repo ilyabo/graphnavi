@@ -87,7 +87,7 @@ const SqlEditor: React.FC<Props> = (props) => {
     const blob = new Blob([results], {
       type: "text/plain;charset=utf-8",
     });
-    saveAs(blob, `dndsql-${genRandomStr(5)}.csv`);
+    saveAs(blob, `csvgraph-${genRandomStr(5)}.csv`);
   };
 
   const views: { [viewId: string]: JSX.Element } = {

@@ -1,7 +1,7 @@
 import React, { FC } from "react";
 import { useDropzone } from "react-dropzone";
 
-import { Flex, Grid, HStack, Icon, Text, VStack } from "@chakra-ui/react";
+import { Box, Flex, Grid, HStack, Icon, Text, VStack } from "@chakra-ui/react";
 import { DocumentAddIcon } from "@heroicons/react/solid";
 import { useDuckConn } from "../lib/useDuckConn";
 import { createTableFromFile, TableInfo, maybeDropTable } from "../lib/duckdb";
@@ -38,7 +38,13 @@ const CsvDropzone: FC<Props> = (props) => {
 
   const handleDrop = async (files: File[]) => {
     // await maybeDropTable(value, duckConn);
-    await createTableFromFile(files[0], duckConn, onTableCreated, onError);
+    try {
+      await createTableFromFile(files[0], duckConn, onTableCreated);
+    } catch (e) {
+      // onError(`Couldn't create table: ${e instanceof Error ? e.message : e}`);
+      onError(`Couldn't create table`);
+      console.log(e);
+    }
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -57,12 +63,13 @@ const CsvDropzone: FC<Props> = (props) => {
 
   return (
     <Flex
+      minWidth={"300px"}
       direction={"column"}
       color="gray.400"
       p={5}
       cursor="pointer"
       bg={isDragActive ? activeBg : "transparent"}
-      _hover={{ bg: "gray.700" }}
+      _hover={!tables?.length ? { bg: "gray.700" } : undefined}
       transition="background-color 0.2s ease"
       borderRadius={8}
       border={`2px dashed`}
@@ -73,35 +80,51 @@ const CsvDropzone: FC<Props> = (props) => {
     >
       <>
         <input {...getInputProps()} />
-        <Flex gap={2} direction={"column"} height={"100%"}>
-          {tables?.length ? (
-            <VStack gap={2}>
-              {tables.map((table, i) => (
-                <FileCard key={i} onReset={handleReset} value={table} />
-              ))}
-            </VStack>
-          ) : null}
-          <Flex
-            direction={"column"}
+        <Flex
+          gap={2}
+          direction={"column"}
+          position={"relative"}
+          height={"100%"}
+        >
+          <Box
+            position={"absolute"}
+            width={"100%"}
             height={"100%"}
-            alignItems={"center"}
-            justifyContent={"center"}
+            overflow={"auto"}
           >
-            <HStack>
-              <Icon w={6} h={6} as={DocumentAddIcon} />
-              <p>
-                {isDragActive
-                  ? "Drop here ..."
-                  : "Drop a file here or click to browse"}
-              </p>
-            </HStack>
-            <Grid templateColumns="auto 1fr" columnGap={3} rowGap={2}>
-              <Text fontSize="xs" fontWeight="bold">
-                Supported formats:
-              </Text>
-              <Text fontSize="xs">{ACCEPTED_FORMATS.join(", ")}</Text>
-            </Grid>
-          </Flex>
+            {tables?.length ? (
+              <VStack gap={2}>
+                {tables.map((table, i) => (
+                  <FileCard key={i} onReset={handleReset} value={table} />
+                ))}
+              </VStack>
+            ) : null}
+          </Box>
+          {!tables?.length ? (
+            <Flex
+              direction={"column"}
+              height={"100%"}
+              alignItems={"center"}
+              justifyContent={"center"}
+              color={"gray.500"}
+              gap={2}
+            >
+              <HStack>
+                <Icon w={6} h={6} as={DocumentAddIcon} />
+                <Text fontSize={"sm"}>
+                  {isDragActive
+                    ? "Drop here ..."
+                    : "Drop files here to create tables"}
+                </Text>
+              </HStack>
+              <Grid templateColumns="auto 1fr" columnGap={3} rowGap={2}>
+                <Text fontSize="xs" fontWeight="bold">
+                  Supported formats:
+                </Text>
+                <Text fontSize="xs">{ACCEPTED_FORMATS.join(", ")}</Text>
+              </Grid>
+            </Flex>
+          ) : null}
         </Flex>
       </>
     </Flex>
