@@ -63,32 +63,30 @@ const FileCard: FC<Props> = (props) => {
             variant="ghost"
             color={"gray.400"}
           />
-          <Portal>
-            <MenuList>
-              <MenuItem
-                isDisabled={true}
-                fontSize={"sm"}
-                icon={<TableIcon width="15px" />}
-              >
-                View data
-              </MenuItem>
-              <MenuItem
-                isDisabled={true}
-                fontSize={"sm"}
-                icon={<PencilIcon width="15px" />}
-              >
-                Rename table
-              </MenuItem>
-              <MenuItem
-                isDisabled={true}
-                fontSize={"sm"}
-                icon={<TrashIcon width="15px" />}
-                // onClick={deleteDatasetModal.onOpen}
-              >
-                Delete table
-              </MenuItem>
-            </MenuList>
-          </Portal>
+          <MenuList>
+            <MenuItem
+              isDisabled={true}
+              fontSize={"sm"}
+              icon={<TableIcon width="15px" />}
+            >
+              View data
+            </MenuItem>
+            <MenuItem
+              isDisabled={true}
+              fontSize={"sm"}
+              icon={<PencilIcon width="15px" />}
+            >
+              Rename table
+            </MenuItem>
+            <MenuItem
+              isDisabled={true}
+              fontSize={"sm"}
+              icon={<TrashIcon width="15px" />}
+              // onClick={deleteDatasetModal.onOpen}
+            >
+              Delete table
+            </MenuItem>
+          </MenuList>
         </Menu>
         {/*<Button*/}
         {/*  color="gray.500"*/}
