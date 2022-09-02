@@ -6,6 +6,7 @@ import { ChakraProvider, Flex, Heading, Spacer, Text } from "@chakra-ui/react";
 import MainView from "../components/MainView";
 import "react-mosaic-component/react-mosaic-component.css";
 import theme from "../theme";
+import GraphView from "../components/GraphView";
 
 const Home: NextPage = () => {
   // const duckConn = useDuckConn();

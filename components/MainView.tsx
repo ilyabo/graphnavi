@@ -4,6 +4,7 @@ import { Mosaic, MosaicNode } from "react-mosaic-component";
 import QueryBox from "./QueryBox";
 import CsvDropzone from "./CsvDropzone";
 import { TableInfo } from "../lib/duckdb";
+import GraphView from "./GraphView";
 
 export interface Props {
   isOpen: boolean;
@@ -38,7 +39,7 @@ const MainView: React.FC<Props> = (props) => {
       second: "graphView",
       splitPercentage: 30,
     },
-    splitPercentage: 30,
+    splitPercentage: 20,
   });
 
   // useEffect(() => {
@@ -106,28 +107,7 @@ const MainView: React.FC<Props> = (props) => {
         <QueryBox />
       </>
     ),
-    graphView: (
-      <Box
-        position={"relative"}
-        width={"100%"}
-        height={"100%"}
-        overflow="auto"
-        background={"gray.900"}
-        fontSize="xs"
-        px={4}
-        py={2}
-      >
-        {/*{loading ? (*/}
-        {/*  <Flex position={"absolute"} w={"100%"} h={"100%"}>*/}
-        {/*    <SpinnerPane />*/}
-        {/*  </Flex>*/}
-        {/*) : (*/}
-        {/*  <Box position={"absolute"}>*/}
-        {/*    <pre style={{ fontFamily: "monospace" }}>{results}</pre>*/}
-        {/*  </Box>*/}
-        {/*)}*/}
-      </Box>
-    ),
+    graphView: <GraphView />,
   };
 
   return (
@@ -143,7 +123,7 @@ const MainView: React.FC<Props> = (props) => {
             // height={"100%"}
             borderRadius="md"
             overflow="hidden"
-            bg={"gray.800"}
+            bg={"gray.700"}
           >
             {views[id]}
           </Flex>

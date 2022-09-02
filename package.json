@@ -20,6 +20,7 @@
     "d3-dsv": "^3.0.1",
     "file-saver": "^2.0.5",
     "framer-motion": "^6.4.3",
+    "graph.gl": "^1.0.0",
     "next": "12.2.2",
     "react": "18.2.0",
     "react-dom": "18.2.0",
