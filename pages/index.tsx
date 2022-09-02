@@ -1,43 +1,20 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import Image from "next/image";
-import { Suspense, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getDuckConn } from "../lib/useDuckConn";
-import {
-  ChakraProvider,
-  Flex,
-  Heading,
-  Spacer,
-  Text,
-  useDisclosure,
-} from "@chakra-ui/react";
-import SqlEditor from "../components/SqlEditor";
+import { ChakraProvider, Flex, Heading, Spacer, Text } from "@chakra-ui/react";
+import MainView from "../components/MainView";
 import "react-mosaic-component/react-mosaic-component.css";
 import theme from "../theme";
-import { TableInfo } from "../lib/duckdb";
-import CsvDropzone from "../components/CsvDropzone";
-import { useToast } from "@chakra-ui/react";
 
 const Home: NextPage = () => {
   // const duckConn = useDuckConn();
-  const [value, setValue] = useState<TableInfo[]>([]);
   const [mounted, setMounted] = useState(false);
-  const sqlEditor = useDisclosure();
-  const toast = useToast();
-
   useEffect(() => {
     // Pre-load DuckDB so that datasets load faster
-    getDuckConn();
     setMounted(true);
+    getDuckConn();
   }, []);
-
-  useEffect(() => {
-    if (value) {
-      sqlEditor.onOpen();
-    } else {
-      sqlEditor.onClose();
-    }
-  }, [value]);
 
   if (!mounted) {
     return null;
@@ -95,36 +72,7 @@ const Home: NextPage = () => {
         </Flex>
 
         <Flex as={"main"} w={"100vw"} height={"100%"}>
-          <Flex p={5} direction={"column"} gap={3}>
-            <Heading as={"h2"} size={"sm"}>
-              Input files
-            </Heading>
-            <Suspense fallback={<div>Loading…</div>}>
-              <CsvDropzone
-                tables={value}
-                onTableCreated={(inputTableName: string, result) => {
-                  console.log(inputTableName, result);
-                  setValue([...value, result]);
-                }}
-                onChange={(result) => {
-                  console.log("onChange", result);
-                }}
-                onReset={() => {
-                  console.log("onReset");
-                }}
-                onError={(message) =>
-                  toast({
-                    title: "Something went wrong",
-                    description: message,
-                    status: "error",
-                    duration: 9000,
-                    isClosable: true,
-                  })
-                }
-              />
-            </Suspense>
-          </Flex>
-          <SqlEditor isOpen={true} onClose={console.log} />
+          <MainView isOpen={true} onClose={console.log} />
         </Flex>
       </Flex>
     </ChakraProvider>

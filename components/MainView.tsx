@@ -1,24 +1,43 @@
-import { Box, Flex, Heading } from "@chakra-ui/react";
-import React, { useState } from "react";
+import { Box, Flex, Heading, useDisclosure, useToast } from "@chakra-ui/react";
+import React, { Suspense, useEffect, useState } from "react";
 import { Mosaic, MosaicNode } from "react-mosaic-component";
 import QueryBox from "./QueryBox";
+import CsvDropzone from "./CsvDropzone";
+import { TableInfo } from "../lib/duckdb";
 
 export interface Props {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const SqlEditor: React.FC<Props> = (props) => {
+const MainView: React.FC<Props> = (props) => {
   const { isOpen, onClose } = props;
+  const [value, setValue] = useState<TableInfo[]>([]);
+  const sqlEditor = useDisclosure();
+  const toast = useToast();
+
+  useEffect(() => {
+    if (value) {
+      sqlEditor.onOpen();
+    } else {
+      sqlEditor.onClose();
+    }
+  }, [value]);
+
   const [mosaicState, setMosaicState] = useState<MosaicNode<string> | null>({
     direction: "row",
-    first: {
-      direction: "column",
-      first: "nodesQueryBox",
-      second: "edgesQueryBox",
-      splitPercentage: 50,
+    first: "filesArea",
+    second: {
+      direction: "row",
+      first: {
+        direction: "column",
+        first: "nodesQueryBox",
+        second: "edgesQueryBox",
+        splitPercentage: 50,
+      },
+      second: "graphView",
+      splitPercentage: 30,
     },
-    second: "graphView",
     splitPercentage: 30,
   });
 
@@ -39,9 +58,41 @@ const SqlEditor: React.FC<Props> = (props) => {
   // }, [handleRun]);
 
   const views: { [viewId: string]: JSX.Element } = {
+    filesArea: (
+      <>
+        <Heading as={"h2"} size={"sm"}>
+          Input files
+        </Heading>
+        <Suspense fallback={<div>Loading…</div>}>
+          <CsvDropzone
+            tables={value}
+            onTableCreated={(inputTableName: string, result) => {
+              console.log(inputTableName, result);
+              setValue([...value, result]);
+            }}
+            onChange={(result) => {
+              console.log("onChange", result);
+            }}
+            onReset={() => {
+              console.log("onReset");
+            }}
+            onError={(message) =>
+              toast({
+                title: "Something went wrong",
+                description: message,
+                status: "error",
+                duration: 9000,
+                isClosable: true,
+              })
+            }
+          />
+        </Suspense>
+      </>
+    ),
+
     nodesQueryBox: (
       <>
-        <Heading as={"h2"} size={"sm"} mb={2}>
+        <Heading as={"h2"} size={"sm"}>
           Nodes query
         </Heading>
         <QueryBox />
@@ -49,7 +100,7 @@ const SqlEditor: React.FC<Props> = (props) => {
     ),
     edgesQueryBox: (
       <>
-        <Heading as={"h2"} size={"sm"} mb={2}>
+        <Heading as={"h2"} size={"sm"}>
           Edges query
         </Heading>
         <QueryBox />
@@ -84,14 +135,15 @@ const SqlEditor: React.FC<Props> = (props) => {
       <Mosaic<string>
         renderTile={(id, path) => (
           <Flex
-            p={2}
+            gap={2}
+            p={3}
             direction={"column"}
             // border={"1px solid red"}
             // width={"100%"}
             // height={"100%"}
             borderRadius="md"
             overflow="hidden"
-            bg={"gray.900"}
+            bg={"gray.800"}
           >
             {views[id]}
           </Flex>
@@ -103,4 +155,4 @@ const SqlEditor: React.FC<Props> = (props) => {
   );
 };
 
-export default SqlEditor;
+export default MainView;

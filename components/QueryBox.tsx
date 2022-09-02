@@ -73,6 +73,7 @@ const QueryBox: FC<Props> = (props) => {
       flexGrow={1}
       borderRadius={5}
       bg={"gray.700"}
+      overflow={"hidden"}
     >
       <Flex
         alignItems="stretch"
@@ -122,8 +123,8 @@ const QueryBox: FC<Props> = (props) => {
           placeholder=""
           bg={"gray.200"}
           color={"gray.900"}
-          width="100%"
-          height="100%"
+          // width="100%"
+          // height="100%"
           _placeholder={{ color: "gray.400" }}
         ></Textarea>
       </Flex>
