@@ -1,10 +1,12 @@
 import { Box, Flex, Heading, useDisclosure, useToast } from "@chakra-ui/react";
-import React, { Suspense, useEffect, useState } from "react";
+import React, { Suspense, useEffect, useMemo, useState } from "react";
 import { Mosaic, MosaicNode } from "react-mosaic-component";
 import QueryBox from "./QueryBox";
 import CsvDropzone from "./CsvDropzone";
 import { TableInfo } from "../lib/duckdb";
 import GraphView from "./GraphView";
+import { Table } from "apache-arrow";
+import { JSONLoader } from "graph.gl";
 
 export interface Props {
   isOpen: boolean;
@@ -12,18 +14,8 @@ export interface Props {
 }
 
 const MainView: React.FC<Props> = (props) => {
-  const { isOpen, onClose } = props;
   const [value, setValue] = useState<TableInfo[]>([]);
-  const sqlEditor = useDisclosure();
   const toast = useToast();
-
-  useEffect(() => {
-    if (value) {
-      sqlEditor.onOpen();
-    } else {
-      sqlEditor.onClose();
-    }
-  }, [value]);
 
   const [mosaicState, setMosaicState] = useState<MosaicNode<string> | null>({
     direction: "row",
@@ -42,21 +34,52 @@ const MainView: React.FC<Props> = (props) => {
     splitPercentage: 20,
   });
 
-  // useEffect(() => {
-  //   const handleKeyDown = (evt: Event) => {
-  //     if (
-  //       evt instanceof KeyboardEvent &&
-  //       evt.key === "Enter" &&
-  //       (evt.metaKey || evt.ctrlKey || evt.shiftKey)
-  //     ) {
-  //       handleRun();
-  //     }
-  //   };
-  //   globalThis.addEventListener("keydown", handleKeyDown);
-  //   return () => {
-  //     globalThis.removeEventListener("keydown", handleKeyDown);
-  //   };
-  // }, [handleRun]);
+  const graph = useMemo(() => {
+    return JSONLoader({
+      json: {
+        nodes: [{ id: "1" }, { id: "2" }, { id: "3" }],
+        edges: [
+          { id: "e1", sourceId: "1", targetId: "2" },
+          { id: "e2", sourceId: "1", targetId: "3" },
+          { id: "e3", sourceId: "2", targetId: "3" },
+        ],
+      },
+      nodeParser: (node: any) => ({ id: node.id }),
+      edgeParser: (edge: any) => ({
+        id: edge.id,
+        sourceId: edge.sourceId,
+        targetId: edge.targetId,
+        directed: true,
+      }),
+    });
+  }, []);
+
+  const handleNodeResults = (table: Table) => {
+    const nodes = Array.from(
+      (function* () {
+        for (let i = 0; i < table.numRows; i++) {
+          yield {
+            id: table.getChild("id")?.get(i),
+            name: table.getChild("name")?.get(i),
+          };
+        }
+      })()
+    );
+    console.log("handleNodeResults", nodes);
+  };
+  const handleEdgeResults = (table: Table) => {
+    console.log("handleEdgeResults", table);
+  };
+
+  const handleError = (message: string) => {
+    toast({
+      title: "Something went wrong",
+      description: message,
+      status: "error",
+      duration: 9000,
+      isClosable: true,
+    });
+  };
 
   const views: { [viewId: string]: JSX.Element } = {
     filesArea: (
@@ -77,15 +100,7 @@ const MainView: React.FC<Props> = (props) => {
             onReset={() => {
               console.log("onReset");
             }}
-            onError={(message) =>
-              toast({
-                title: "Something went wrong",
-                description: message,
-                status: "error",
-                duration: 9000,
-                isClosable: true,
-              })
-            }
+            onError={handleError}
           />
         </Suspense>
       </>
@@ -96,7 +111,7 @@ const MainView: React.FC<Props> = (props) => {
         <Heading as={"h2"} size={"sm"}>
           Nodes query
         </Heading>
-        <QueryBox />
+        <QueryBox onResults={handleNodeResults} onError={handleError} />
       </>
     ),
     edgesQueryBox: (
@@ -104,10 +119,10 @@ const MainView: React.FC<Props> = (props) => {
         <Heading as={"h2"} size={"sm"}>
           Edges query
         </Heading>
-        <QueryBox />
+        <QueryBox onResults={handleEdgeResults} onError={handleError} />
       </>
     ),
-    graphView: <GraphView />,
+    graphView: <GraphView graph={graph} />,
   };
 
   return (

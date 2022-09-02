@@ -1,30 +1,14 @@
 import React, { FC } from "react";
 import GraphGL, { D3ForceLayout, JSONLoader, NODE_TYPE } from "graph.gl";
 import { Flex } from "@chakra-ui/react";
+import { Graph } from "../types";
 
 type Props = {
-  // nothing yet
+  graph: Graph;
 };
 
 const GraphView: FC<Props> = (props) => {
-  const {} = props;
-  const graph = JSONLoader({
-    json: {
-      nodes: [{ id: "1" }, { id: "2" }, { id: "3" }],
-      edges: [
-        { id: "e1", sourceId: "1", targetId: "2" },
-        { id: "e2", sourceId: "1", targetId: "3" },
-        { id: "e3", sourceId: "2", targetId: "3" },
-      ],
-    },
-    nodeParser: (node: any) => ({ id: node.id }),
-    edgeParser: (edge: any) => ({
-      id: edge.id,
-      sourceId: edge.sourceId,
-      targetId: edge.targetId,
-      directed: true,
-    }),
-  });
+  const { graph } = props;
   return (
     <Flex
       position={"relative"}

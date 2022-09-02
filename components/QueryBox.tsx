@@ -15,14 +15,32 @@ import { genRandomStr } from "../lib/utils";
 import { PlayIcon, QuestionMarkCircleIcon } from "@heroicons/react/solid";
 import NextLink from "next/link";
 import { DownloadIcon } from "@chakra-ui/icons";
+import { Table } from "apache-arrow";
 
 type Props = {
-  // nothing yet
+  onResults: (table: Table) => void;
+  onError: (msg: string) => void;
 };
 
 const QueryBox: FC<Props> = (props) => {
-  const {} = props;
+  const { onResults, onError } = props;
   const duckConn = useDuckConn();
+
+  // useEffect(() => {
+  //   const handleKeyDown = (evt: Event) => {
+  //     if (
+  //       evt instanceof KeyboardEvent &&
+  //       evt.key === "Enter" &&
+  //       (evt.metaKey || evt.ctrlKey || evt.shiftKey)
+  //     ) {
+  //       handleRun();
+  //     }
+  //   };
+  //   globalThis.addEventListener("keydown", handleKeyDown);
+  //   return () => {
+  //     globalThis.removeEventListener("keydown", handleKeyDown);
+  //   };
+  // }, [handleRun]);
 
   const [query, setQuery] = useState(
     localStorage.getItem("lastQuery") ?? ""
@@ -38,16 +56,18 @@ const QueryBox: FC<Props> = (props) => {
       setLoading(true);
       const results = await conn.query(query);
       // await conn.query(`SET search_path = main`);
-      setResults(csvFormat(results.toArray()));
+      // setResults(csvFormat(results.toArray()));
+      onResults(results);
       setError(false);
     } catch (e) {
       let msg = e instanceof Error ? e.message : String(e);
-      const i = msg.indexOf("Query call stack");
-      if (i >= 0) msg = msg.substring(0, i);
+      // const i = msg.indexOf("Query call stack");
+      // if (i >= 0) msg = msg.substring(0, i);
       // console.error(e);
-      setError(true);
-      setResults(msg);
+      // setError(true);
+      // setResults(msg);
       // TODO: set error state
+      onError(msg);
     } finally {
       setLoading(false);
     }
@@ -67,8 +87,8 @@ const QueryBox: FC<Props> = (props) => {
   return (
     <Flex
       alignItems="stretch"
-      px={3}
-      pt={3}
+      // px={3}
+      // pt={3}
       pb={3}
       flexGrow={1}
       borderRadius={5}
@@ -82,7 +102,7 @@ const QueryBox: FC<Props> = (props) => {
         gap={2}
         bg={"transparent"}
       >
-        <HStack ml={1}>
+        <HStack>
           <Button
             isDisabled={loading}
             size={"sm"}
