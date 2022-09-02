@@ -4,11 +4,12 @@ import {
   Flex,
   HStack,
   Icon,
+  IconButton,
   Spacer,
   Textarea,
 } from "@chakra-ui/react";
 import React, { useCallback, useEffect, useState } from "react";
-import { PlayIcon } from "@heroicons/react/solid";
+import { PlayIcon, QuestionMarkCircleIcon } from "@heroicons/react/solid";
 import { useDuckConn } from "../lib/useDuckConn";
 import { Mosaic, MosaicNode } from "react-mosaic-component";
 import { DownloadIcon } from "@chakra-ui/icons";
@@ -16,6 +17,7 @@ import { csvFormat } from "d3-dsv";
 import { saveAs } from "file-saver";
 import SpinnerPane from "./SpinnerPane";
 import { genRandomStr } from "../lib/utils";
+import NextLink from "next/link";
 
 export interface Props {
   isOpen: boolean;
@@ -143,6 +145,19 @@ const SqlEditor: React.FC<Props> = (props) => {
           >
             Run
           </Button>
+          <NextLink
+            href={"https://duckdb.org/docs/sql/introduction#querying-a-table"}
+            passHref
+          >
+            <IconButton
+              as="a"
+              target={"_blank"}
+              fontWeight="normal"
+              icon={<QuestionMarkCircleIcon width={18} />}
+              variant={"ghost"}
+              aria-label={"Help"}
+            />
+          </NextLink>
           <Spacer />
           <Button
             disabled={!results || loading || error}
