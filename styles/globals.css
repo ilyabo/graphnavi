@@ -14,3 +14,7 @@ a {
 * {
   box-sizing: border-box;
 }
+
+.mosaic.mosaic-blueprint-theme {
+  background-color: unset !important;
+}

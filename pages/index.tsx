@@ -57,41 +57,48 @@ const Home: NextPage = () => {
         left={0}
         width={"100vw"}
         height={"100vh"}
+        gap={1}
       >
         <Flex
           width={"100%"}
           as={"header"}
           px={5}
-          pt={5}
+          pt={3}
           mx={"auto"}
           // maxW={"6xl"}
         >
-          <Flex direction={"column"}>
-            <Heading fontSize="2xl">csvgraph</Heading>
-            <Text fontSize="xs">
-              Drop CSV files and run SQL queries to visualize as a network
+          <Flex direction={"row"} alignItems={"center"} gap={5}>
+            <Heading fontSize="2xl" display={"flex"}>
+              <Text color={"gray.500"}>Graph</Text>
+              <Text color={"gray.100"}>NAVI</Text>
+            </Heading>
+            <Text fontSize="xs" color={"gray.500"}>
+              Network analysis and visualization tool
             </Text>
           </Flex>
           <Spacer />
-          <a
-            href="https://www.duckdb.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Flex alignItems="center" gap={2}>
-              <Text>Powered by DuckDB</Text>
-              <Image
-                src="/duckdb.svg"
-                alt="DuckDB Logo"
-                width={30}
-                height={30}
-              />
-            </Flex>
-          </a>
+          {/*<a*/}
+          {/*  href="https://www.duckdb.org"*/}
+          {/*  target="_blank"*/}
+          {/*  rel="noopener noreferrer"*/}
+          {/*>*/}
+          {/*  <Flex alignItems="center" gap={2}>*/}
+          {/*    <Text fontSize={"xs"}>Powered by DuckDB</Text>*/}
+          {/*    <Image*/}
+          {/*      src="/duckdb.svg"*/}
+          {/*      alt="DuckDB Logo"*/}
+          {/*      width={30}*/}
+          {/*      height={30}*/}
+          {/*    />*/}
+          {/*  </Flex>*/}
+          {/*</a>*/}
         </Flex>
 
         <Flex as={"main"} w={"100vw"} height={"100%"}>
-          <Flex p={5}>
+          <Flex p={5} direction={"column"} gap={3}>
+            <Heading as={"h2"} size={"sm"}>
+              Input files
+            </Heading>
             <Suspense fallback={<div>Loading…</div>}>
               <CsvDropzone
                 tables={value}
@@ -117,7 +124,6 @@ const Home: NextPage = () => {
               />
             </Suspense>
           </Flex>
-
           <SqlEditor isOpen={true} onClose={console.log} />
         </Flex>
       </Flex>
