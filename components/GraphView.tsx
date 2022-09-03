@@ -27,11 +27,11 @@ const GraphView: FC<Props> = (props) => {
             {
               type: NODE_TYPE.CIRCLE,
               radius: 5,
-              fill: "red",
+              fill: theme.colors.gray[400],
             },
           ]}
           edgeStyle={{
-            stroke: theme.colors.gray[200],
+            stroke: theme.colors.gray[500],
             strokeWidth: 1,
           }}
         />
