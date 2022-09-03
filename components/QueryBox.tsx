@@ -108,7 +108,7 @@ const QueryBox: FC<Props> = (props) => {
     return () => {
       globalThis.removeEventListener("keydown", handleKeyDown);
     };
-  }, [handleRun]);
+  }, [handleRun, focusedElement]);
 
   return (
     <Flex

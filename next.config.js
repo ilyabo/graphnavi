@@ -2,7 +2,7 @@
 const nextConfig = {
   // reactStrictMode: true,
   reactStrictMode: false,
-  swcMinify: true,
+  swcMinify: false,
 };
 
 module.exports = nextConfig;
