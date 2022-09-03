@@ -1,7 +1,9 @@
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
 import GraphGL, { D3ForceLayout, NODE_TYPE } from "graph.gl";
 import { Box, Flex, Text, useTheme } from "@chakra-ui/react";
-import { Graph } from "../types";
+import { Graph, GraphNode } from "../types";
+import { opacify } from "../lib/utils";
+import TooltipBox from "./TooltipBox";
 
 type Props = {
   graph?: Graph;
@@ -10,6 +12,17 @@ type Props = {
 const GraphView: FC<Props> = (props) => {
   const { graph } = props;
   const theme = useTheme();
+
+  const [hoverNode, setHoverNode] = useState<GraphNode>();
+  const handleNodeClick = (info: any) => {
+    console.log("handleNodeClick", info);
+  };
+  const handleNodeHover = (info: any) => {
+    setHoverNode(info.object);
+  };
+  const handleNodeMouseLeave = () => {
+    setHoverNode(undefined);
+  };
   return (
     <Flex
       position={"relative"}
@@ -28,11 +41,24 @@ const GraphView: FC<Props> = (props) => {
               type: NODE_TYPE.CIRCLE,
               radius: 5,
               fill: theme.colors.gray[400],
+              ":hover": {
+                radius: 7,
+                fill: theme.colors.blue[500],
+              },
             },
           ]}
           edgeStyle={{
-            stroke: theme.colors.gray[500],
-            strokeWidth: 1,
+            stroke: theme.colors.gray[600],
+            strokeWidth: 1.5,
+            // ":hover": {
+            //   radius: 10,
+            //   fill: theme.colors.blue[500],
+            // },
+          }}
+          nodeEvents={{
+            onClick: handleNodeClick,
+            onHover: handleNodeHover,
+            onMouseLeave: handleNodeMouseLeave,
           }}
         />
       ) : (
@@ -52,6 +78,14 @@ const GraphView: FC<Props> = (props) => {
           </Box>
         </Flex>
       )}
+      {hoverNode ? (
+        <TooltipBox
+          title={"Node"}
+          values={{
+            id: hoverNode.id,
+          }}
+        />
+      ) : null}
     </Flex>
   );
 };

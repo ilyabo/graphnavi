@@ -1,3 +1,5 @@
+import { rgb } from "d3-color";
+
 export function genRandomStr(length: number) {
   const rnd = Math.random;
   return Array.from(
@@ -12,13 +14,18 @@ export function genRandomStr(length: number) {
           yield String.fromCharCode(v + 48); // '0' - '9'
         }
       }
-    })(),
-  ).join('');
+    })()
+  ).join("");
 }
 
-
-export const NUMBER_FORMAT = new Intl.NumberFormat('en-US', {
+export const NUMBER_FORMAT = new Intl.NumberFormat("en-US", {
   minimumFractionDigits: 0,
 });
 
 export const formatNumber = NUMBER_FORMAT.format;
+
+export function opacify(color: string, opacity: number): string {
+  const c = rgb(color);
+  c.opacity = opacity;
+  return c.formatRgb();
+}
