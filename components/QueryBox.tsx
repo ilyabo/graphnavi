@@ -3,25 +3,23 @@ import {
   Alert,
   AlertDescription,
   AlertIcon,
-  AlertTitle,
-  Box,
   Button,
   Flex,
   HStack,
   Icon,
   IconButton,
-  Spacer,
-  Textarea,
 } from "@chakra-ui/react";
-import { csvFormat } from "d3-dsv";
 import { useDuckConn } from "../lib/useDuckConn";
-import { saveAs } from "file-saver";
-import { genRandomStr } from "../lib/utils";
 import { PlayIcon, QuestionMarkCircleIcon } from "@heroicons/react/solid";
 import NextLink from "next/link";
-import { DownloadIcon } from "@chakra-ui/icons";
 import { Table } from "apache-arrow";
 import SpinnerPane from "./SpinnerPane";
+import dynamic from "next/dynamic";
+
+const SqlEditor = dynamic(() => import("../components/SqlEditor"), {
+  // see https://github.com/securingsincity/react-ace/issues/1044
+  ssr: false,
+});
 
 type Props = {
   id: string;
@@ -29,6 +27,13 @@ type Props = {
   isValidResult: (table: Table) => string | undefined;
   onResult: (table: Table) => void;
   onError: (msg: string) => void;
+};
+
+const ACE_EDITOR_OPTIONS = {
+  enableBasicAutocompletion: true,
+  enableSnippets: true,
+  enableLiveAutocompletion: true,
+  showLineNumbers: false,
 };
 
 const QueryBox: FC<Props> = (props) => {
@@ -100,6 +105,7 @@ const QueryBox: FC<Props> = (props) => {
     setQuery(newQuery);
     localStorage.setItem(localStorageKey, newQuery);
   };
+
   return (
     <Flex
       alignItems="stretch"
@@ -150,23 +156,36 @@ const QueryBox: FC<Props> = (props) => {
           flexDirection="column"
           gap={2}
         >
-          <Textarea
-            rows={1}
-            height={"100%"}
-            // resize={"none"}
-            fontFamily={"monospace"}
-            isDisabled={loading}
-            fontSize={"sm"}
-            flex="1 0 auto"
+          <SqlEditor
+            mode="sql"
+            theme="dracula"
             value={query}
-            onChange={(e) => handleChangeQuery(e.target.value)}
-            placeholder=""
-            bg={"gray.200"}
-            color={"gray.900"}
-            // width="100%"
-            // height="100%"
-            _placeholder={{ color: "gray.400" }}
+            showGutter={false}
+            highlightActiveLine
+            onChange={handleChangeQuery}
+            name="query-editor"
+            editorProps={{ $blockScrolling: true }}
+            setOptions={ACE_EDITOR_OPTIONS}
+            style={{ position: "absolute", width: "100%", height: "100%" }}
           />
+
+          {/*<Textarea*/}
+          {/*  rows={1}*/}
+          {/*  height={"100%"}*/}
+          {/*  // resize={"none"}*/}
+          {/*  fontFamily={"monospace"}*/}
+          {/*  isDisabled={loading}*/}
+          {/*  fontSize={"sm"}*/}
+          {/*  flex="1 0 auto"*/}
+          {/*  value={query}*/}
+          {/*  onChange={(e) => handleChangeQuery(e.target.value)}*/}
+          {/*  placeholder=""*/}
+          {/*  bg={"gray.200"}*/}
+          {/*  color={"gray.900"}*/}
+          {/*  // width="100%"*/}
+          {/*  // height="100%"*/}
+          {/*  _placeholder={{ color: "gray.400" }}*/}
+          {/*/>*/}
           <Button
             zIndex={2}
             isDisabled={loading}
