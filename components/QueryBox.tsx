@@ -1,5 +1,10 @@
 import React, { FC, useCallback, useState } from "react";
 import {
+  Alert,
+  AlertDescription,
+  AlertIcon,
+  AlertTitle,
+  Box,
   Button,
   Flex,
   HStack,
@@ -18,13 +23,17 @@ import { DownloadIcon } from "@chakra-ui/icons";
 import { Table } from "apache-arrow";
 
 type Props = {
-  onResults: (table: Table) => void;
+  id: string;
+  query?: string;
+  isValidResult: (table: Table) => string | undefined;
+  onResult: (table: Table) => void;
   onError: (msg: string) => void;
 };
 
 const QueryBox: FC<Props> = (props) => {
-  const { onResults, onError } = props;
+  const { id, isValidResult, onResult, onError } = props;
   const duckConn = useDuckConn();
+  const [resultError, setResultError] = useState<string>();
 
   // useEffect(() => {
   //   const handleKeyDown = (evt: Event) => {
@@ -42,11 +51,12 @@ const QueryBox: FC<Props> = (props) => {
   //   };
   // }, [handleRun]);
 
+  const localStorageKey = `queryBox.${id}.lastQuery`;
   const [query, setQuery] = useState(
-    localStorage.getItem("lastQuery") ?? ""
+    localStorage.getItem(localStorageKey) ?? ""
     //`SELECT count(*) FROM ${tableName}`
   );
-  const [results, setResults] = useState("");
+  const [resultsInternal, setResultsInternal] = useState<Table>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const handleRun = useCallback(async () => {
@@ -55,9 +65,14 @@ const QueryBox: FC<Props> = (props) => {
       // await conn.query(`SET search_path = ${schema}`);
       setLoading(true);
       const results = await conn.query(query);
+      setResultsInternal(results);
       // await conn.query(`SET search_path = main`);
       // setResults(csvFormat(results.toArray()));
-      onResults(results);
+      const resultError = isValidResult(results);
+      setResultError(resultError);
+      if (!resultError) {
+        onResult(results);
+      }
       setError(false);
     } catch (e) {
       let msg = e instanceof Error ? e.message : String(e);
@@ -74,22 +89,22 @@ const QueryBox: FC<Props> = (props) => {
   }, [duckConn.conn, query]);
 
   const handleDownload = () => {
-    const blob = new Blob([results], {
-      type: "text/plain;charset=utf-8",
-    });
-    saveAs(blob, `csvgraph-${genRandomStr(5)}.csv`);
+    // const blob = new Blob([resultsInternal], {
+    //   type: "text/plain;charset=utf-8",
+    // });
+    // saveAs(blob, `graphnavi-${genRandomStr(5)}.csv`);
   };
 
   const handleChangeQuery = (newQuery: string) => {
     setQuery(newQuery);
-    localStorage.setItem("lastQuery", newQuery);
+    localStorage.setItem(localStorageKey, newQuery);
   };
   return (
     <Flex
       alignItems="stretch"
       // px={3}
       // pt={3}
-      pb={3}
+      // pb={3}
       flexGrow={1}
       borderRadius={5}
       bg={"gray.700"}
@@ -102,21 +117,14 @@ const QueryBox: FC<Props> = (props) => {
         gap={2}
         bg={"transparent"}
       >
-        <HStack>
-          <Button
-            isDisabled={loading}
-            size={"sm"}
-            leftIcon={<Icon as={PlayIcon} h={5} w={5} />}
-            onClick={handleRun}
-          >
-            Run
-          </Button>
+        <HStack position={"absolute"} right={1} top={1}>
           <NextLink
             href={"https://duckdb.org/docs/sql/introduction#querying-a-table"}
             passHref
           >
             <IconButton
               as="a"
+              size={"sm"}
               target={"_blank"}
               fontWeight="normal"
               icon={<QuestionMarkCircleIcon width={18} />}
@@ -124,29 +132,71 @@ const QueryBox: FC<Props> = (props) => {
               aria-label={"Help"}
             />
           </NextLink>
-          <Spacer />
-          <IconButton
-            disabled={!results || loading || error}
-            size={"sm"}
-            icon={<Icon as={DownloadIcon} h={5} w={5} />}
-            onClick={handleDownload}
-            aria-label={"Download CSV"}
-          />
+          {/*<Spacer />*/}
+          {/*<IconButton*/}
+          {/*  disabled={!resultsInternal || loading || error}*/}
+          {/*  size={"sm"}*/}
+          {/*  icon={<Icon as={DownloadIcon} h={5} w={5} />}*/}
+          {/*  onClick={handleDownload}*/}
+          {/*  aria-label={"Download CSV"}*/}
+          {/*/>*/}
         </HStack>
-        <Textarea
-          fontFamily={"monospace"}
-          isDisabled={loading}
-          fontSize={"sm"}
-          flex="1 0 auto"
-          value={query}
-          onChange={(e) => handleChangeQuery(e.target.value)}
-          placeholder=""
-          bg={"gray.200"}
-          color={"gray.900"}
-          // width="100%"
-          // height="100%"
-          _placeholder={{ color: "gray.400" }}
-        ></Textarea>
+        <Flex position={"relative"} flexGrow={1}>
+          <Textarea
+            height={"100%"}
+            resize={"none"}
+            fontFamily={"monospace"}
+            isDisabled={loading}
+            fontSize={"sm"}
+            flex="1 0 auto"
+            value={query}
+            onChange={(e) => handleChangeQuery(e.target.value)}
+            placeholder=""
+            bg={"gray.200"}
+            color={"gray.900"}
+            // width="100%"
+            // height="100%"
+            _placeholder={{ color: "gray.400" }}
+          />
+          <Button
+            zIndex={2}
+            isDisabled={loading}
+            size={"sm"}
+            leftIcon={<Icon as={PlayIcon} h={5} w={5} />}
+            onClick={handleRun}
+            position={"absolute"}
+            bottom={2}
+            right={2}
+            bgColor={"gray.600"}
+            _hover={{
+              bgColor: "gray.500",
+            }}
+            _active={{
+              bgColor: "gray.400",
+            }}
+          >
+            Run
+          </Button>
+        </Flex>
+        {resultError ? (
+          <Alert status="error" borderRadius={"md"}>
+            <AlertIcon />
+            {/*<AlertTitle>Your browser is outdated!</AlertTitle>*/}
+            <AlertDescription>{resultError}</AlertDescription>
+          </Alert>
+        ) : resultsInternal ? (
+          <Alert status="success" borderRadius={"md"}>
+            <AlertIcon />
+            {/*<AlertTitle>Your browser is outdated!</AlertTitle>*/}
+            <AlertDescription>
+              {resultsInternal.numRows > 1
+                ? `${resultsInternal.numRows} rows`
+                : resultsInternal.numRows > 0
+                ? "One row"
+                : "Empty result"}
+            </AlertDescription>
+          </Alert>
+        ) : null}
       </Flex>
     </Flex>
   );

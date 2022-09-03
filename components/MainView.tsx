@@ -7,6 +7,7 @@ import { TableInfo } from "../lib/duckdb";
 import GraphView from "./GraphView";
 import { Table } from "apache-arrow";
 import { JSONLoader } from "graph.gl";
+import { GraphEdge, GraphNode } from "../types";
 
 export interface Props {
   isOpen: boolean;
@@ -34,25 +35,25 @@ const MainView: React.FC<Props> = (props) => {
     splitPercentage: 20,
   });
 
+  const [nodes, setNodes] = useState<GraphNode[]>();
+  const [edges, setEdges] = useState<GraphEdge[]>();
   const graph = useMemo(() => {
+    console.log("nodes", nodes);
+    console.log("edges", edges);
     return JSONLoader({
       json: {
-        nodes: [{ id: "1" }, { id: "2" }, { id: "3" }],
-        edges: [
-          { id: "e1", sourceId: "1", targetId: "2" },
-          { id: "e2", sourceId: "1", targetId: "3" },
-          { id: "e3", sourceId: "2", targetId: "3" },
-        ],
+        nodes: nodes ?? [],
+        edges: edges ?? [],
       },
-      nodeParser: (node: any) => ({ id: node.id }),
-      edgeParser: (edge: any) => ({
-        id: edge.id,
-        sourceId: edge.sourceId,
-        targetId: edge.targetId,
-        directed: true,
-      }),
+      // nodeParser: (node: any) => ({ id: node.id }),
+      // edgeParser: (edge: any) => ({
+      //   id: edge.id,
+      //   sourceId: edge.sourceId,
+      //   targetId: edge.targetId,
+      //   directed: true,
+      // }),
     });
-  }, []);
+  }, [nodes, edges]);
 
   const handleNodeResults = (table: Table) => {
     const nodes = Array.from(
@@ -65,15 +66,27 @@ const MainView: React.FC<Props> = (props) => {
         }
       })()
     );
-    console.log("handleNodeResults", nodes);
+    setNodes(nodes);
   };
   const handleEdgeResults = (table: Table) => {
-    console.log("handleEdgeResults", table);
+    const edges = Array.from(
+      (function* () {
+        for (let i = 0; i < table.numRows; i++) {
+          yield {
+            id: `${i}`,
+            sourceId: table.getChild("source")?.get(i),
+            targetId: table.getChild("target")?.get(i),
+            directed: true,
+          };
+        }
+      })()
+    );
+    setEdges(edges);
   };
 
   const handleError = (message: string) => {
     toast({
-      title: "Something went wrong",
+      // title: "Something went wrong",
       description: message,
       status: "error",
       duration: 9000,
@@ -109,17 +122,27 @@ const MainView: React.FC<Props> = (props) => {
     nodesQueryBox: (
       <>
         <Heading as={"h2"} size={"sm"}>
-          Nodes query
+          Nodes
         </Heading>
-        <QueryBox onResults={handleNodeResults} onError={handleError} />
+        <QueryBox
+          id={"nodes"}
+          isValidResult={validateNodes}
+          onResult={handleNodeResults}
+          onError={handleError}
+        />
       </>
     ),
     edgesQueryBox: (
       <>
         <Heading as={"h2"} size={"sm"}>
-          Edges query
+          Edges
         </Heading>
-        <QueryBox onResults={handleEdgeResults} onError={handleError} />
+        <QueryBox
+          id={"edges"}
+          isValidResult={validateEdges}
+          onResult={handleEdgeResults}
+          onError={handleError}
+        />
       </>
     ),
     graphView: <GraphView graph={graph} />,
@@ -149,5 +172,20 @@ const MainView: React.FC<Props> = (props) => {
     </Flex>
   );
 };
+
+function checkHasColumn(table: Table, name: string) {
+  if (!table.getChild(name)) {
+    return `Column '${name}' is missing in the query result`;
+  }
+  return undefined;
+}
+
+function validateNodes(table: Table) {
+  return checkHasColumn(table, "id");
+}
+
+function validateEdges(table: Table) {
+  return checkHasColumn(table, "source") ?? checkHasColumn(table, "target");
+}
 
 export default MainView;
