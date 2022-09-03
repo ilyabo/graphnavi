@@ -91,7 +91,7 @@ export function useDuckConn() {
       }
       return duckConn;
     },
-    { suspense: true }
+    { suspense: false }
   );
   return res.data!;
 }

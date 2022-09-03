@@ -6,20 +6,13 @@ import { ChakraProvider, Flex, Heading, Spacer, Text } from "@chakra-ui/react";
 import MainView from "../components/MainView";
 import "react-mosaic-component/react-mosaic-component.css";
 import theme from "../theme";
-import GraphView from "../components/GraphView";
 
 const Home: NextPage = () => {
-  // const duckConn = useDuckConn();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    // Pre-load DuckDB so that datasets load faster
-    setMounted(true);
-    getDuckConn();
-  }, []);
-
-  if (!mounted) {
-    return null;
-  }
+  // const [mounted, setMounted] = useState(false);
+  // useEffect(() => {
+  //   setMounted(true);
+  // }, []);
+  // if (!mounted) return null;
   return (
     <ChakraProvider theme={theme}>
       <Head>
@@ -73,7 +66,7 @@ const Home: NextPage = () => {
         </Flex>
 
         <Flex as={"main"} w={"100vw"} height={"100%"}>
-          <MainView isOpen={true} onClose={console.log} />
+          <MainView />
         </Flex>
       </Flex>
     </ChakraProvider>

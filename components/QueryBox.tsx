@@ -16,11 +16,12 @@ import { Table } from "apache-arrow";
 import SpinnerPane from "./SpinnerPane";
 import dynamic from "next/dynamic";
 import { useActiveElement } from "../lib/hooks";
+import SqlEditor from "./SqlEditor";
 
-const SqlEditor = dynamic(() => import("../components/SqlEditor"), {
-  // see https://github.com/securingsincity/react-ace/issues/1044
-  ssr: false,
-});
+// const SqlEditor = dynamic(() => import("../components/SqlEditor"), {
+//   // see https://github.com/securingsincity/react-ace/issues/1044
+//   ssr: false,
+// });
 
 type Props = {
   id: string;
@@ -52,7 +53,8 @@ const QueryBox: FC<Props> = (props) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const handleRun = useCallback(async () => {
-    const conn = duckConn.conn;
+    const conn = duckConn?.conn;
+    if (!conn) return;
     try {
       // await conn.query(`SET search_path = ${schema}`);
       setLoading(true);
@@ -78,7 +80,7 @@ const QueryBox: FC<Props> = (props) => {
     } finally {
       setLoading(false);
     }
-  }, [duckConn.conn, query]);
+  }, [duckConn?.conn, query]);
 
   const handleDownload = () => {
     // const blob = new Blob([resultsInternal], {

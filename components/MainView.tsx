@@ -1,18 +1,24 @@
-import { Box, Flex, Heading, useDisclosure, useToast } from "@chakra-ui/react";
-import React, { Suspense, useEffect, useMemo, useState } from "react";
+import { Flex, Heading, useToast } from "@chakra-ui/react";
+import React, { Suspense, useMemo, useState } from "react";
 import { Mosaic, MosaicNode } from "react-mosaic-component";
-import QueryBox from "./QueryBox";
-import CsvDropzone from "./CsvDropzone";
 import { TableInfo } from "../lib/duckdb";
 import GraphView from "./GraphView";
 import { Table } from "apache-arrow";
 import { JSONLoader } from "graph.gl";
 import { GraphEdge, GraphNode } from "../types";
+import dynamic from "next/dynamic";
+// import CsvDropzone from "./CsvDropzone";
+// import QueryBox from "./QueryBox";
 
-export interface Props {
-  isOpen: boolean;
-  onClose: () => void;
-}
+export interface Props {}
+
+const QueryBox = dynamic(() => import("./QueryBox"), {
+  ssr: false,
+});
+
+const CsvDropzone = dynamic(() => import("./CsvDropzone"), {
+  ssr: false,
+});
 
 const MainView: React.FC<Props> = (props) => {
   const [value, setValue] = useState<TableInfo[]>([]);
@@ -99,22 +105,22 @@ const MainView: React.FC<Props> = (props) => {
         <Heading as={"h2"} size={"sm"}>
           Input files
         </Heading>
-        <Suspense fallback={<div>Loading…</div>}>
-          <CsvDropzone
-            tables={value}
-            onTableCreated={(inputTableName: string, result) => {
-              console.log(inputTableName, result);
-              setValue([...value, result]);
-            }}
-            onChange={(result) => {
-              console.log("onChange", result);
-            }}
-            onReset={() => {
-              console.log("onReset");
-            }}
-            onError={handleError}
-          />
-        </Suspense>
+        {/*<Suspense fallback={<div>Loading…</div>}>*/}
+        <CsvDropzone
+          tables={value}
+          onTableCreated={(inputTableName: string, result) => {
+            console.log(inputTableName, result);
+            setValue([...value, result]);
+          }}
+          onChange={(result) => {
+            console.log("onChange", result);
+          }}
+          onReset={() => {
+            console.log("onReset");
+          }}
+          onError={handleError}
+        />
+        {/*</Suspense>*/}
       </>
     ),
 
