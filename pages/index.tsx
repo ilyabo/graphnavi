@@ -10,6 +10,12 @@ import {
   Spacer,
   Text,
   useDisclosure,
+  Button,
+  Icon,
+  Menu,
+  MenuItem,
+  MenuButton,
+  MenuList,
 } from "@chakra-ui/react";
 import SqlEditor from "../components/SqlEditor";
 import "react-mosaic-component/react-mosaic-component.css";
@@ -17,6 +23,9 @@ import theme from "../theme";
 import { TableInfo } from "../lib/duckdb";
 import CsvDropzone from "../components/CsvDropzone";
 import { useToast } from "@chakra-ui/react";
+import { ChevronDownIcon, DownloadIcon } from "@chakra-ui/icons";
+import { AiFillGithub } from "react-icons/ai";
+import { Authentication } from "../components/Authentication";
 
 const Home: NextPage = () => {
   // const duckConn = useDuckConn();
@@ -24,6 +33,16 @@ const Home: NextPage = () => {
   const [mounted, setMounted] = useState(false);
   const sqlEditor = useDisclosure();
   const toast = useToast();
+
+  const isLoggedIn = false;
+  async function handleSave() {
+    console.log('save');
+  }
+  async function loginGithub() {
+    console.log('login github')
+  }
+
+
 
   useEffect(() => {
     // Pre-load DuckDB so that datasets load faster
@@ -64,7 +83,7 @@ const Home: NextPage = () => {
           px={5}
           pt={5}
           mx={"auto"}
-          // maxW={"6xl"}
+        // maxW={"6xl"}
         >
           <Flex direction={"column"}>
             <Heading fontSize="2xl">csvgraph</Heading>
@@ -73,21 +92,52 @@ const Home: NextPage = () => {
             </Text>
           </Flex>
           <Spacer />
-          <a
-            href="https://www.duckdb.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Flex alignItems="center" gap={2}>
-              <Text>Powered by DuckDB</Text>
-              <Image
-                src="/duckdb.svg"
-                alt="DuckDB Logo"
-                width={30}
-                height={30}
-              />
+
+          <Flex direction={"column"} justifyContent="right">
+            <a
+              href="https://www.duckdb.org"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Flex alignItems="center" gap={2}>
+                <Text>Powered by DuckDB</Text>
+                <Image
+                  src="/duckdb.svg"
+                  alt="DuckDB Logo"
+                  width={30}
+                  height={30}
+                />
+              </Flex>
+            </a>
+            <Flex direction={"row"} gap={5}>
+              <Authentication />
+              <Menu>
+                <MenuButton
+                  as={Button}
+                  rightIcon={<ChevronDownIcon
+                  // size={"sm"}
+                  />}>
+                  Save
+                </MenuButton>
+                <MenuList>
+                  <MenuItem
+                    isDisabled={!isLoggedIn}
+                    icon={<Icon as={AiFillGithub} h={5} w={5} />}
+                  >
+                    GitHub Gist
+                  </MenuItem>
+                  <MenuItem
+                    isDisabled={!isLoggedIn}
+                    // disabled={!results || loading || error}
+                    icon={<Icon as={DownloadIcon} h={5} w={5} />}
+                  // onClick={handleDownload}
+                  >
+                    Download CSV
+                  </MenuItem>
+                </MenuList>
+              </Menu>
             </Flex>
-          </a>
+          </Flex>
         </Flex>
 
         <Flex as={"main"} w={"100vw"} height={"100%"}>
@@ -117,6 +167,8 @@ const Home: NextPage = () => {
               />
             </Suspense>
           </Flex>
+
+
 
           <SqlEditor isOpen={true} onClose={console.log} />
         </Flex>
