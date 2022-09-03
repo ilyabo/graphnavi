@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useState } from "react";
+import React, { FC, useCallback, useEffect, useState } from "react";
 import {
   Alert,
   AlertDescription,
@@ -15,6 +15,7 @@ import NextLink from "next/link";
 import { Table } from "apache-arrow";
 import SpinnerPane from "./SpinnerPane";
 import dynamic from "next/dynamic";
+import { useActiveElement } from "../lib/hooks";
 
 const SqlEditor = dynamic(() => import("../components/SqlEditor"), {
   // see https://github.com/securingsincity/react-ace/issues/1044
@@ -37,25 +38,10 @@ const ACE_EDITOR_OPTIONS = {
 };
 
 const QueryBox: FC<Props> = (props) => {
+  const focusedElement = useActiveElement();
   const { id, isValidResult, onResult, onError } = props;
   const duckConn = useDuckConn();
   const [resultError, setResultError] = useState<string>();
-
-  // useEffect(() => {
-  //   const handleKeyDown = (evt: Event) => {
-  //     if (
-  //       evt instanceof KeyboardEvent &&
-  //       evt.key === "Enter" &&
-  //       (evt.metaKey || evt.ctrlKey || evt.shiftKey)
-  //     ) {
-  //       handleRun();
-  //     }
-  //   };
-  //   globalThis.addEventListener("keydown", handleKeyDown);
-  //   return () => {
-  //     globalThis.removeEventListener("keydown", handleKeyDown);
-  //   };
-  // }, [handleRun]);
 
   const localStorageKey = `queryBox.${id}.lastQuery`;
   const [query, setQuery] = useState(
@@ -105,6 +91,24 @@ const QueryBox: FC<Props> = (props) => {
     setQuery(newQuery);
     localStorage.setItem(localStorageKey, newQuery);
   };
+
+  useEffect(() => {
+    const handleKeyDown = (evt: Event) => {
+      if (
+        evt instanceof KeyboardEvent &&
+        evt.key === "Enter" &&
+        (evt.metaKey || evt.ctrlKey || evt.shiftKey)
+      ) {
+        if (focusedElement === evt.target) {
+          handleRun();
+        }
+      }
+    };
+    globalThis.addEventListener("keydown", handleKeyDown);
+    return () => {
+      globalThis.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleRun]);
 
   return (
     <Flex
@@ -161,7 +165,7 @@ const QueryBox: FC<Props> = (props) => {
             theme="dracula"
             value={query}
             showGutter={false}
-            highlightActiveLine
+            highlightActiveLine={true}
             onChange={handleChangeQuery}
             name="query-editor"
             editorProps={{ $blockScrolling: true }}
@@ -220,16 +224,16 @@ const QueryBox: FC<Props> = (props) => {
           ) : null}
         </Flex>
         {resultError ? (
-          <Alert status="error" borderRadius={"md"}>
+          <Alert status="error" borderRadius={"md"} p={1}>
             <AlertIcon />
             {/*<AlertTitle>Your browser is outdated!</AlertTitle>*/}
-            <AlertDescription>{resultError}</AlertDescription>
+            <AlertDescription fontSize={"xs"}>{resultError}</AlertDescription>
           </Alert>
         ) : resultsInternal ? (
-          <Alert status="success" borderRadius={"md"}>
+          <Alert status="success" borderRadius={"md"} p={1}>
             <AlertIcon />
             {/*<AlertTitle>Your browser is outdated!</AlertTitle>*/}
-            <AlertDescription>
+            <AlertDescription fontSize={"xs"}>
               {resultsInternal.numRows > 1
                 ? `${resultsInternal.numRows} rows`
                 : resultsInternal.numRows > 0
