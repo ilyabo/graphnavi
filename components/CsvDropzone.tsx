@@ -63,7 +63,7 @@ const CsvDropzone: FC<Props> = (props) => {
 
   return (
     <Flex
-      minWidth={"300px"}
+      // minWidth={"300px"}
       direction={"column"}
       color="gray.400"
       p={5}
