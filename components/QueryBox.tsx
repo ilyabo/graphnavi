@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useEffect, useState } from "react";
+import React, { FC, Suspense, useCallback, useEffect, useState } from "react";
 import {
   Alert,
   AlertDescription,
@@ -15,13 +15,12 @@ import NextLink from "next/link";
 import { Table } from "apache-arrow";
 import SpinnerPane from "./SpinnerPane";
 import dynamic from "next/dynamic";
-import { useActiveElement } from "../lib/hooks";
-import SqlEditor from "./SqlEditor";
-
-// const SqlEditor = dynamic(() => import("../components/SqlEditor"), {
-//   // see https://github.com/securingsincity/react-ace/issues/1044
-//   ssr: false,
-// });
+// import SqlEditor from "./SqlEditor";
+// import { useActiveElement } from "../lib/hooks";
+const SqlEditor = dynamic(() => import("../components/SqlEditor"), {
+  // see https://github.com/securingsincity/react-ace/issues/1044
+  ssr: false,
+});
 
 type Props = {
   id: string;
@@ -39,7 +38,7 @@ const ACE_EDITOR_OPTIONS = {
 };
 
 const QueryBox: FC<Props> = (props) => {
-  const focusedElement = useActiveElement();
+  // const focusedElement = useActiveElement();
   const { id, isValidResult, onResult, onError } = props;
   const duckConn = useDuckConn();
   const [resultError, setResultError] = useState<string>();
@@ -101,16 +100,19 @@ const QueryBox: FC<Props> = (props) => {
         evt.key === "Enter" &&
         (evt.metaKey || evt.ctrlKey || evt.shiftKey)
       ) {
-        if (focusedElement === evt.target) {
-          handleRun();
-        }
+        // if (focusedElement === evt.target) {
+        handleRun();
+        // }
       }
     };
     globalThis.addEventListener("keydown", handleKeyDown);
     return () => {
       globalThis.removeEventListener("keydown", handleKeyDown);
     };
-  }, [handleRun, focusedElement]);
+  }, [
+    handleRun,
+    // , focusedElement
+  ]);
 
   return (
     <Flex
@@ -249,4 +251,17 @@ const QueryBox: FC<Props> = (props) => {
   );
 };
 
-export default QueryBox;
+const SuspendedQueryBox: FC<Props> = (props) => {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  if (!mounted) return null;
+  return (
+    <Suspense fallback={<SpinnerPane h={"100%"} />}>
+      <QueryBox {...props} />
+    </Suspense>
+  );
+};
+
+export default SuspendedQueryBox;

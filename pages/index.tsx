@@ -1,13 +1,14 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import { useEffect, useState } from "react";
-import { getDuckConn } from "../lib/useDuckConn";
 import { ChakraProvider, Flex, Heading, Spacer, Text } from "@chakra-ui/react";
 import MainView from "../components/MainView";
 import "react-mosaic-component/react-mosaic-component.css";
 import theme from "../theme";
 
 const Home: NextPage = () => {
+  // useEffect(() => {
+  //   getDuckConn();
+  // }, []);
   // const [mounted, setMounted] = useState(false);
   // useEffect(() => {
   //   setMounted(true);

@@ -1,27 +1,24 @@
 import { Flex, Heading, useToast } from "@chakra-ui/react";
-import React, { Suspense, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Mosaic, MosaicNode } from "react-mosaic-component";
-import { TableInfo } from "../lib/duckdb";
 import GraphView from "./GraphView";
 import { Table } from "apache-arrow";
 import { JSONLoader } from "graph.gl";
-import { GraphEdge, GraphNode } from "../types";
-import dynamic from "next/dynamic";
+import { EdgeFields, GraphEdge, GraphNode, NodeFields } from "../types";
+import FilesArea from "./FilesArea";
 // import CsvDropzone from "./CsvDropzone";
-// import QueryBox from "./QueryBox";
+import QueryBox from "./QueryBox";
 
 export interface Props {}
 
-const QueryBox = dynamic(() => import("./QueryBox"), {
-  ssr: false,
-});
-
-const CsvDropzone = dynamic(() => import("./CsvDropzone"), {
-  ssr: false,
-});
+// const QueryBox = dynamic(() => import("./QueryBox"), {
+//   ssr: false,
+// });
 
 const MainView: React.FC<Props> = (props) => {
-  const [value, setValue] = useState<TableInfo[]>([]);
+  const [updateIndex, setUpdateIndex] = useState(0);
+  const [nodeFieldsAvail, setNodeFieldsAvail] =
+    useState<Record<NodeFields, boolean>>();
   const toast = useToast();
 
   const [mosaicState, setMosaicState] = useState<MosaicNode<string> | null>({
@@ -44,7 +41,9 @@ const MainView: React.FC<Props> = (props) => {
   const [nodes, setNodes] = useState<GraphNode[]>();
   const [edges, setEdges] = useState<GraphEdge[]>();
   const graph = useMemo(() => {
-    return JSONLoader({
+    const nextUpdateIndex = updateIndex + 1;
+    setUpdateIndex(nextUpdateIndex);
+    const graph = JSONLoader({
       json: {
         nodes: nodes ?? [],
         edges: edges ?? [],
@@ -57,20 +56,36 @@ const MainView: React.FC<Props> = (props) => {
       //   directed: true,
       // }),
     });
+    // graph.setGraphName("123");
+    return graph;
   }, [nodes, edges]);
 
   const handleNodeResults = (table: Table) => {
+    const schema = table.schema;
     const nodes = Array.from(
       (function* () {
-        for (let i = 0; i < table.numRows; i++) {
-          yield {
-            id: table.getChild("id")?.get(i),
-            name: table.getChild("name")?.get(i),
-          };
+        for (let ri = 0; ri < table.numRows; ri++) {
+          const node: Record<string, any> = {};
+          for (const field of schema.fields) {
+            node[field.name] = `${table.getChild(field.name)?.get(ri)}`;
+          }
+          // yield {
+          //   id: table.getChild("id")?.get(i),
+          //   name: table.getChild("name")?.get(i),
+          // };
+          yield node as GraphNode;
         }
       })()
     );
     setNodes(nodes);
+    const hasField = (fName: NodeFields) =>
+      Boolean(schema.fields.find((f) => f.name === fName));
+    setNodeFieldsAvail({
+      [NodeFields.ID]: hasField(NodeFields.ID),
+      [NodeFields.LABEL]: hasField(NodeFields.LABEL),
+      [NodeFields.COLOR]: hasField(NodeFields.COLOR),
+      [NodeFields.SIZE]: hasField(NodeFields.SIZE),
+    });
   };
   const handleEdgeResults = (table: Table) => {
     const edges = Array.from(
@@ -78,8 +93,8 @@ const MainView: React.FC<Props> = (props) => {
         for (let i = 0; i < table.numRows; i++) {
           yield {
             id: `${i}`,
-            sourceId: table.getChild("source")?.get(i),
-            targetId: table.getChild("target")?.get(i),
+            sourceId: table.getChild(EdgeFields.SOURCE)?.get(i),
+            targetId: table.getChild(EdgeFields.TARGET)?.get(i),
             directed: true,
           };
         }
@@ -100,29 +115,7 @@ const MainView: React.FC<Props> = (props) => {
   };
 
   const views: { [viewId: string]: JSX.Element } = {
-    filesArea: (
-      <>
-        <Heading as={"h2"} size={"sm"}>
-          Input files
-        </Heading>
-        {/*<Suspense fallback={<div>Loading…</div>}>*/}
-        <CsvDropzone
-          tables={value}
-          onTableCreated={(inputTableName: string, result) => {
-            console.log(inputTableName, result);
-            setValue([...value, result]);
-          }}
-          onChange={(result) => {
-            console.log("onChange", result);
-          }}
-          onReset={() => {
-            console.log("onReset");
-          }}
-          onError={handleError}
-        />
-        {/*</Suspense>*/}
-      </>
-    ),
+    filesArea: <FilesArea onError={handleError} />,
 
     nodesQueryBox: (
       <>
@@ -150,8 +143,20 @@ const MainView: React.FC<Props> = (props) => {
         />
       </>
     ),
-    graphView: <GraphView graph={graph} />,
+    graphView: (
+      <GraphView
+        updateIndex={updateIndex}
+        graph={graph}
+        nodeFieldsAvail={nodeFieldsAvail}
+      />
+    ),
   };
+
+  // const [mounted, setMounted] = useState(false);
+  // useEffect(() => {
+  //   setMounted(true);
+  // }, []);
+  // if (!mounted) return <SpinnerPane />;
 
   return (
     <Flex alignItems="stretch" px={3} pt={3} pb={1} flexGrow={1}>
@@ -186,11 +191,14 @@ function checkHasColumn(table: Table, name: string) {
 }
 
 function validateNodes(table: Table) {
-  return checkHasColumn(table, "id");
+  return checkHasColumn(table, NodeFields.ID);
 }
 
 function validateEdges(table: Table) {
-  return checkHasColumn(table, "source") ?? checkHasColumn(table, "target");
+  return (
+    checkHasColumn(table, EdgeFields.SOURCE) ??
+    checkHasColumn(table, EdgeFields.TARGET)
+  );
 }
 
 export default MainView;

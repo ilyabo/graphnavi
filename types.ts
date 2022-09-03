@@ -11,3 +11,26 @@ export type GraphEdge = {
   targetId: string;
   directed: boolean;
 };
+
+// export type GraphAttrsAvail = {
+//   nodeName?: boolean;
+//   nodeSize?: boolean;
+//   nodeColor?: boolean;
+//   edgeName?: boolean;
+//   edgeWeight?: boolean;
+//   edgeColor?: boolean;
+// };
+
+export enum NodeFields {
+  ID = "id",
+  LABEL = "label",
+  SIZE = "size",
+  COLOR = "color",
+}
+
+export enum EdgeFields {
+  ID = "id",
+  SOURCE = "source",
+  TARGET = "target",
+  LABEL = "label",
+}

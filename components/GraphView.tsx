@@ -1,24 +1,36 @@
 import React, { FC, useState } from "react";
-import GraphGL, { D3ForceLayout, NODE_TYPE } from "graph.gl";
+import GraphGL from "../lib/graphgl";
+import { D3ForceLayout, NODE_TYPE } from "graph.gl";
 import { Box, Flex, Text, useTheme } from "@chakra-ui/react";
-import { Graph, GraphNode } from "../types";
-import { opacify } from "../lib/utils";
+import { Graph, NodeFields } from "../types";
 import TooltipBox from "./TooltipBox";
 
 type Props = {
+  updateIndex: number;
   graph?: Graph;
+  nodeFieldsAvail?: Record<NodeFields, boolean>;
 };
 
 const GraphView: FC<Props> = (props) => {
-  const { graph } = props;
+  const { updateIndex, graph, nodeFieldsAvail } = props;
   const theme = useTheme();
+  // const showNodeLabel = true;
+  const nodeLabelSize = 10;
+  // console.log("nodeFieldsAvail", nodeFieldsAvail);
 
-  const [hoverNode, setHoverNode] = useState<GraphNode>();
+  const [hoverNode, setHoverNode] = useState<Record<string, string>>();
   const handleNodeClick = (info: any) => {
     console.log("handleNodeClick", info);
   };
   const handleNodeHover = (info: any) => {
-    setHoverNode(info.object);
+    const { object } = info;
+    // console.log(object);
+    if (object) {
+      setHoverNode({
+        ...object._data,
+        edges: Object.keys(object._connectedEdges).length,
+      });
+    }
   };
   const handleNodeMouseLeave = () => {
     setHoverNode(undefined);
@@ -34,6 +46,8 @@ const GraphView: FC<Props> = (props) => {
     >
       {graph ? (
         <GraphGL
+          // key={updateIndex}
+          // updateIndex={updateIndex}
           graph={graph}
           layout={new D3ForceLayout()}
           nodeStyle={[
@@ -45,6 +59,15 @@ const GraphView: FC<Props> = (props) => {
                 radius: 7,
                 fill: theme.colors.blue[500],
               },
+            },
+            nodeFieldsAvail?.[NodeFields.LABEL] && {
+              type: NODE_TYPE.LABEL,
+              text: (node: any) => node._data[NodeFields.LABEL],
+              color: [255, 255, 255, 255],
+              // color: Color(this.props.nodeLabelColor).array(),
+              alignmentBaseline: "top",
+              fontSize: nodeLabelSize,
+              offset: [0, 7],
             },
           ]}
           edgeStyle={{
@@ -78,14 +101,7 @@ const GraphView: FC<Props> = (props) => {
           </Box>
         </Flex>
       )}
-      {hoverNode ? (
-        <TooltipBox
-          title={"Node"}
-          values={{
-            id: hoverNode.id,
-          }}
-        />
-      ) : null}
+      {hoverNode ? <TooltipBox title={"Node"} values={hoverNode} /> : null}
     </Flex>
   );
 };
