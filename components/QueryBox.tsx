@@ -21,6 +21,7 @@ import { PlayIcon, QuestionMarkCircleIcon } from "@heroicons/react/solid";
 import NextLink from "next/link";
 import { DownloadIcon } from "@chakra-ui/icons";
 import { Table } from "apache-arrow";
+import SpinnerPane from "./SpinnerPane";
 
 type Props = {
   id: string;
@@ -141,10 +142,18 @@ const QueryBox: FC<Props> = (props) => {
           {/*  aria-label={"Download CSV"}*/}
           {/*/>*/}
         </HStack>
-        <Flex position={"relative"} flexGrow={1}>
+        <Flex
+          position={"relative"}
+          flexGrow={1}
+          alignItems="stretch"
+          width="100%"
+          flexDirection="column"
+          gap={2}
+        >
           <Textarea
+            rows={1}
             height={"100%"}
-            resize={"none"}
+            // resize={"none"}
             fontFamily={"monospace"}
             isDisabled={loading}
             fontSize={"sm"}
@@ -177,6 +186,19 @@ const QueryBox: FC<Props> = (props) => {
           >
             Run
           </Button>
+          {loading ? (
+            <Flex
+              position={"absolute"}
+              top={0}
+              left={0}
+              right={0}
+              bottom={0}
+              alignItems={"center"}
+              justifyItems={"center"}
+            >
+              <SpinnerPane />
+            </Flex>
+          ) : null}
         </Flex>
         {resultError ? (
           <Alert status="error" borderRadius={"md"}>

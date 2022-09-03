@@ -38,8 +38,6 @@ const MainView: React.FC<Props> = (props) => {
   const [nodes, setNodes] = useState<GraphNode[]>();
   const [edges, setEdges] = useState<GraphEdge[]>();
   const graph = useMemo(() => {
-    console.log("nodes", nodes);
-    console.log("edges", edges);
     return JSONLoader({
       json: {
         nodes: nodes ?? [],
@@ -85,6 +83,7 @@ const MainView: React.FC<Props> = (props) => {
   };
 
   const handleError = (message: string) => {
+    toast.closeAll();
     toast({
       // title: "Something went wrong",
       description: message,
