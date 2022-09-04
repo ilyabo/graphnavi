@@ -21,7 +21,7 @@ const FilesArea: FC<Props> = (props) => {
   useEffect(() => {
     if (router.query.gist) {
       importFiles(String(router.query.gist), 'data.csv').then(resp => {
-        setFileContent(resp.content);
+        setFileContent(resp[0].content);
       })
     }
     setMounted(true);

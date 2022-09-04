@@ -22,7 +22,6 @@ const MainView: React.FC<Props> = (props) => {
   const [nodeFieldsAvail, setNodeFieldsAvail] =
     useState<Record<NodeFields, boolean>>();
   const toast = useToast();
-  console.log(props)
 
   const [mosaicState, setMosaicState] = useState<MosaicNode<string> | null>({
     direction: "row",
@@ -44,8 +43,7 @@ const MainView: React.FC<Props> = (props) => {
   const [egdesText, setEdgesText] = useState("")
   const [nodesText, setNodesText] = useState("")
   const router = useRouter()
-  // useEffect(() => {
-    console.log('Main view');
+  useEffect(() => {
     if (router.query.gist) {
       importFiles(String(router.query.gist), 'nodes.sql').then(resp => {
         console.log(resp);
@@ -58,7 +56,7 @@ const MainView: React.FC<Props> = (props) => {
         // setNodes(resp[0].content);
       })
     }
-  // }, []);
+  }, []);
 
   const [nodes, setNodes] = useState<GraphNode[]>();
   const [edges, setEdges] = useState<GraphEdge[]>();

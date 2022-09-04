@@ -4,27 +4,43 @@ import { Button, ChakraProvider, Flex, Heading, Icon, Menu, MenuButton, MenuItem
 import MainView from "../components/MainView";
 import "react-mosaic-component/react-mosaic-component.css";
 import theme from "../theme";
-import { Authentication } from "../components/Authentication";
+import { Authentication, isAuthenticated } from "../components/Authentication";
 import { ChevronDownIcon, DownloadIcon } from "@chakra-ui/icons";
 import { AiFillGithub } from "react-icons/ai";
-import { importFiles } from "../lib/save";
-import { useEffect } from "react";
+import { importFiles, saveToGithub } from "../lib/save";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import { useCookies } from "react-cookie";
 
 const Home: NextPage = () => {
-  
+
   const router = useRouter()
   let filesContent;
+  const [cookies, setCookie, removeCookie] = useCookies();
   useEffect(() => {
 
     if (router.query.gist) {
+      console.log('Found gist id');
+      console.log('Fetching contents');
       importFiles(String(router.query.gist)).then(resp => {
         filesContent = resp;
-        console.log(filesContent);
+        console.log({ filesContent });
       })
+      if ('github-token' in cookies) {
+        console.log('Found GitHub token');
+        setisAuthenticatedGithub(true)
+        return;
+      }
     }
 
   })
+
+  function save() {
+    saveToGithub(cookies['github-token'])
+  }
+
+  const [isAuthenticatedGithub, setisAuthenticatedGithub] = useState(false);
+
   return (
     <ChakraProvider theme={theme}>
       <Head>
@@ -86,8 +102,9 @@ const Home: NextPage = () => {
             </MenuButton>
             <MenuList>
               <MenuItem
-                isDisabled={true}
+                isDisabled={isAuthenticatedGithub}
                 icon={<Icon as={AiFillGithub} h={5} w={5} />}
+                onClick={save}
               >
                 GitHub Gist
               </MenuItem>
