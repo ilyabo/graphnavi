@@ -7,21 +7,12 @@ import {
   Flex,
   HStack,
   Icon,
-  IconButton,
-  Text,
-  Link,
-  Box,
-  UnorderedList,
-  ListItem,
 } from "@chakra-ui/react";
 import { useDuckConn } from "../lib/useDuckConn";
-import { PlayIcon, QuestionMarkCircleIcon } from "@heroicons/react/solid";
-import NextLink from "next/link";
+import { PlayIcon } from "@heroicons/react/solid";
 import { Table } from "apache-arrow";
 import SpinnerPane from "./SpinnerPane";
 import dynamic from "next/dynamic";
-import InfoBox from "./InfoBox";
-import QueryHelp from "./QueryHelp";
 // import SqlEditor from "./SqlEditor";
 // import { useActiveElement } from "../lib/hooks";
 const SqlEditor = dynamic(() => import("../components/SqlEditor"), {
@@ -36,7 +27,7 @@ type Props = {
   onResult: (table: Table) => void;
   onError: (msg: string) => void;
   content?: string;
-  queryHelp?: ReactNode;
+  queryHelp?: React.ReactNode;
 };
 
 const ACE_EDITOR_OPTIONS = {

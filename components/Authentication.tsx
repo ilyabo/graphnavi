@@ -79,7 +79,7 @@ export function Authentication() {
   return (
     <>
       <div>
-        <Button onClick={onOpen} size={"sm"}>
+        <Button onClick={onOpen} size={"sm"} disabled={true}>
           Sign In
         </Button>
 
