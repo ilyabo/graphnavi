@@ -26,16 +26,18 @@ const Home: NextPage = () => {
         filesContent = resp;
         console.log({ filesContent });
       })
-      if ('github-token' in cookies) {
-        console.log('Found GitHub token');
-        setisAuthenticatedGithub(true)
-        return;
-      }
+    }
+
+    if ('github-token' in cookies) {
+      console.log('Found GitHub token');
+      setisAuthenticatedGithub(true)
+      return;
     }
 
   })
 
   function save() {
+    console.log(cookies)
     saveToGithub(cookies['github-token'])
   }
 
@@ -91,32 +93,35 @@ const Home: NextPage = () => {
           {/*    />*/}
           {/*  </Flex>*/}
           {/*</a>*/}
-          <Authentication></Authentication>
-          <Menu>
-            <MenuButton
-              as={Button}
-              rightIcon={<ChevronDownIcon
-              // size={"sm"}
-              />}>
-              Save
-            </MenuButton>
-            <MenuList>
-              <MenuItem
-                isDisabled={isAuthenticatedGithub}
-                icon={<Icon as={AiFillGithub} h={5} w={5} />}
-                onClick={save}
-              >
-                GitHub Gist
-              </MenuItem>
-              <MenuItem
-                // disabled={!results || loading || error}
-                icon={<Icon as={DownloadIcon} h={5} w={5} />}
-              // onClick={handleDownload}
-              >
-                Download CSV
-              </MenuItem>
-            </MenuList>
-          </Menu>
+          <Flex direction={"row"} gap={5}>
+
+            <Authentication></Authentication>
+            <Menu>
+              <MenuButton
+                as={Button}
+                rightIcon={<ChevronDownIcon
+                // size={"sm"}
+                />}>
+                Save
+              </MenuButton>
+              <MenuList>
+                <MenuItem
+                  isDisabled={!isAuthenticatedGithub}
+                  icon={<Icon as={AiFillGithub} h={5} w={5} />}
+                  onClick={save}
+                >
+                  GitHub Gist
+                </MenuItem>
+                <MenuItem
+                  // disabled={!results || loading || error}
+                  icon={<Icon as={DownloadIcon} h={5} w={5} />}
+                // onClick={handleDownload}
+                >
+                  Download CSV
+                </MenuItem>
+              </MenuList>
+            </Menu>
+          </Flex>
         </Flex>
         <Flex as={"main"} w={"100vw"} height={"100%"}>
           <MainView />

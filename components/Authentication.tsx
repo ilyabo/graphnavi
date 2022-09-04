@@ -24,7 +24,7 @@ export function isAuthenticated(cookies: any, type: 'github' | string) {
 }
 
 function requestGithubToken(code: string, setCookie: (name: string, value: string) => void) {
-  axios.post('https://cors-anywhere.herokuapp.com/https://github.com/login/oauth/access_token', {
+  axios.post('https://github.com/login/oauth/access_token', {
     params: {
       client_id: process.env.NEXT_PUBLIC_CLIENT_ID,
       client_secret: process.env.NEXT_PUBLIC_CLIENT_SECRET,
@@ -46,24 +46,27 @@ export function Authentication() {
   const router = useRouter()
 
   const [isAuthenticatedGithub, setisAuthenticatedGithub] = useState(false);
+
   useEffect(() => {
     // Finish authentication
-    if (router.query.code) {
+    if (router.query.code && !cookies['github-token']) {
       console.log('Finish authentication')
-      requestGithubToken(String(router.query.code), setCookie);
+      axios.get(`http://localhost:3000/api/github?code=${router.query.code}`).then(resp => {
+        console.log(resp);
+        try {
+          setCookie('github-token', resp.data) 
+          router.replace('/', undefined, { shallow: true });
+        } catch (error) {
+          console.log(error);
+        }
+      })
     }
+
     if ('github-token' in cookies) {
       console.log('Found GitHub token');
       setisAuthenticatedGithub(true)
       return;
     }
-    if (process.env.NEXT_PUBLIC_CLIENT_TOKEN && !cookies['github-token']) {
-      console.log('Found GitHub token in env variables')
-      console.log('Saving token')
-      setCookie('github-token', process.env.NEXT_PUBLIC_CLIENT_TOKEN);
-      setisAuthenticatedGithub(true)
-    }
-    // =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
   })
 
 

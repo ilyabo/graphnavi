@@ -24,7 +24,7 @@ export async function importFiles(gist_id: string, file?: string | string[]) {
         'Authorization': `Bearer ${process.env.NEXT_PUBLIC_CLIENT_TOKEN}`,
       }
     })
-    
+
     let filesToFetch = FILES;
     if (typeof file === "string") {
       filesToFetch = [file];
@@ -32,7 +32,7 @@ export async function importFiles(gist_id: string, file?: string | string[]) {
       //   file, 
       //   content: await readFilesContent(resp.data.files[file].raw_url),
       // }
-    } else if (Array.isArray(file)){
+    } else if (Array.isArray(file)) {
       filesToFetch = file;
     }
 
@@ -42,8 +42,8 @@ export async function importFiles(gist_id: string, file?: string | string[]) {
       }
     }
     const filesContent = await Promise.all(filesToFetch.map(async file => {
-      return { 
-        file, 
+      return {
+        file,
         content: await readFilesContent(resp.data.files[file].raw_url),
       }
     }))
@@ -61,20 +61,24 @@ export async function importFiles(gist_id: string, file?: string | string[]) {
 export async function saveToGithub(token: string, name?: string) {
   try {
     console.log('saving')
+    console.log(token)
     const resp = await axios.post('https://api.github.com/gists', {
       headers: {
         'Authorization': `Bearer ${token}`,
         // 'Accept': 'application/vnd.github+json',
       },
-      public: true,
-      files: {
-        'name.txt': {
-          content: 'asd',
-        },
+      data: {
+
+        public: true,
+        files: {
+          'name.txt': {
+            content: 'asd',
+          },
+        }
       }
     })
     console.log(resp);
   } catch (error) {
-    console.log(error); 
+    console.log(error);
   }
 }
