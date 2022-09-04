@@ -1,4 +1,10 @@
-import { Flex, Heading, useToast } from "@chakra-ui/react";
+import {
+  Flex,
+  Heading,
+  ListItem,
+  UnorderedList,
+  useToast,
+} from "@chakra-ui/react";
 import React, { useEffect, useMemo, useState } from "react";
 import { Mosaic, MosaicNode } from "react-mosaic-component";
 import GraphView from "./GraphView";
@@ -10,6 +16,7 @@ import FilesArea from "./FilesArea";
 import QueryBox from "./QueryBox";
 import { useRouter } from "next/router";
 import { importFiles } from "../lib/save";
+import QueryHelp from "./QueryHelp";
 
 export interface Props {}
 
@@ -40,21 +47,21 @@ const MainView: React.FC<Props> = (props) => {
     splitPercentage: 20,
   });
 
-  const [egdesText, setEdgesText] = useState("")
-  const [nodesText, setNodesText] = useState("")
-  const router = useRouter()
+  const [egdesText, setEdgesText] = useState("");
+  const [nodesText, setNodesText] = useState("");
+  const router = useRouter();
   useEffect(() => {
     if (router.query.gist) {
-      importFiles(String(router.query.gist), 'nodes.sql').then(resp => {
+      importFiles(String(router.query.gist), "nodes.sql").then((resp) => {
         console.log(resp);
         setNodesText(resp[0].content);
         // setNodes(resp[0].content);
-      })
-      importFiles(String(router.query.gist), 'edges.sql').then(resp => {
+      });
+      importFiles(String(router.query.gist), "edges.sql").then((resp) => {
         console.log(resp);
         setEdgesText(resp[0].content);
         // setNodes(resp[0].content);
-      })
+      });
     }
   }, []);
 
@@ -148,6 +155,23 @@ const MainView: React.FC<Props> = (props) => {
           isValidResult={validateNodes}
           onResult={handleNodeResults}
           onError={handleError}
+          queryHelp={
+            <QueryHelp
+              text={`Write an SQL select query which returns the graph nodes.
+              You can refer to the input files as table names.
+              The query result should have the following columns:`}
+              columnsList={
+                <UnorderedList>
+                  <ListItem>id</ListItem>
+                  <ListItem>label (optional)</ListItem>
+                </UnorderedList>
+              }
+              queryExample={`SELECT 
+  column0 AS id, 
+  column1 AS label
+FROM my_nodes_table`}
+            />
+          }
         />
       </>
     ),
@@ -162,6 +186,23 @@ const MainView: React.FC<Props> = (props) => {
           isValidResult={validateEdges}
           onResult={handleEdgeResults}
           onError={handleError}
+          queryHelp={
+            <QueryHelp
+              text={`Write an SQL select query which returns the graph edges.
+              You can refer to the input files as table names.
+              The query result should have the following columns:`}
+              columnsList={
+                <UnorderedList>
+                  <ListItem>source</ListItem>
+                  <ListItem>target</ListItem>
+                </UnorderedList>
+              }
+              queryExample={`SELECT 
+  source_id AS source, 
+  target_id AS target
+FROM my_edges_table`}
+            />
+          }
         />
       </>
     ),

@@ -8,6 +8,11 @@ import {
   HStack,
   Icon,
   IconButton,
+  Text,
+  Link,
+  Box,
+  UnorderedList,
+  ListItem,
 } from "@chakra-ui/react";
 import { useDuckConn } from "../lib/useDuckConn";
 import { PlayIcon, QuestionMarkCircleIcon } from "@heroicons/react/solid";
@@ -15,6 +20,8 @@ import NextLink from "next/link";
 import { Table } from "apache-arrow";
 import SpinnerPane from "./SpinnerPane";
 import dynamic from "next/dynamic";
+import InfoBox from "./InfoBox";
+import QueryHelp from "./QueryHelp";
 // import SqlEditor from "./SqlEditor";
 // import { useActiveElement } from "../lib/hooks";
 const SqlEditor = dynamic(() => import("../components/SqlEditor"), {
@@ -29,6 +36,7 @@ type Props = {
   onResult: (table: Table) => void;
   onError: (msg: string) => void;
   content?: string;
+  queryHelp?: ReactNode;
 };
 
 const ACE_EDITOR_OPTIONS = {
@@ -40,7 +48,7 @@ const ACE_EDITOR_OPTIONS = {
 
 const QueryBox: FC<Props> = (props) => {
   // const focusedElement = useActiveElement();
-  const { id, isValidResult, onResult, onError } = props;
+  const { id, isValidResult, onResult, onError, queryHelp } = props;
   const duckConn = useDuckConn();
   const [resultError, setResultError] = useState<string>();
 
@@ -134,30 +142,33 @@ const QueryBox: FC<Props> = (props) => {
         gap={2}
         bg={"transparent"}
       >
-        <HStack position={"absolute"} right={1} top={1}>
-          <NextLink
-            href={"https://duckdb.org/docs/sql/introduction#querying-a-table"}
-            passHref
-          >
-            <IconButton
-              as="a"
-              size={"sm"}
-              target={"_blank"}
-              fontWeight="normal"
-              icon={<QuestionMarkCircleIcon width={18} />}
-              variant={"ghost"}
-              aria-label={"Help"}
-            />
-          </NextLink>
-          {/*<Spacer />*/}
-          {/*<IconButton*/}
-          {/*  disabled={!resultsInternal || loading || error}*/}
-          {/*  size={"sm"}*/}
-          {/*  icon={<Icon as={DownloadIcon} h={5} w={5} />}*/}
-          {/*  onClick={handleDownload}*/}
-          {/*  aria-label={"Download CSV"}*/}
-          {/*/>*/}
-        </HStack>
+        {queryHelp ? (
+          <HStack position={"absolute"} right={1} top={1}>
+            {queryHelp}
+            {/*<NextLink*/}
+            {/*  href={"https://duckdb.org/docs/sql/introduction#querying-a-table"}*/}
+            {/*  passHref*/}
+            {/*>*/}
+            {/*  <IconButton*/}
+            {/*    as="a"*/}
+            {/*    size={"sm"}*/}
+            {/*    target={"_blank"}*/}
+            {/*    fontWeight="normal"*/}
+            {/*    icon={<QuestionMarkCircleIcon width={18} />}*/}
+            {/*    variant={"ghost"}*/}
+            {/*    aria-label={"Help"}*/}
+            {/*  />*/}
+            {/*</NextLink>*/}
+            {/*<Spacer />*/}
+            {/*<IconButton*/}
+            {/*  disabled={!resultsInternal || loading || error}*/}
+            {/*  size={"sm"}*/}
+            {/*  icon={<Icon as={DownloadIcon} h={5} w={5} />}*/}
+            {/*  onClick={handleDownload}*/}
+            {/*  aria-label={"Download CSV"}*/}
+            {/*/>*/}
+          </HStack>
+        ) : null}
         <Flex
           position={"relative"}
           flexGrow={1}
