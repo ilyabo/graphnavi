@@ -14,10 +14,9 @@ import {
 } from "@chakra-ui/react";
 import NextLink from 'next/link';
 import { AiFillGithub } from "react-icons/ai";
-import { Cookies, useCookies } from 'react-cookie';
+import { useCookies } from 'react-cookie';
 import { useRouter } from 'next/router'
 import axios from "axios";
-import { importFiles } from "../lib/save";
 import { useEffect } from "react";
 
 export function isAuthenticated(cookies: any, type: 'github' | string) {
@@ -53,6 +52,7 @@ export function Authentication() {
         requestGithubToken(String(router.query.code), setCookie);
     }
     if ('github_token' in cookies) {
+      console.log('Found GitHub token');
       isAuthenticatedGithub = true;
     }
   })

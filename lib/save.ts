@@ -17,7 +17,7 @@ async function readFilesContent(fileUrl: string) {
   return content
 }
 
-export async function importFiles(gist_id: string, file?: string) {
+export async function importFiles(gist_id: string, file?: string | string[]) {
   try {
     const resp = await axios.get('https://api.github.com/gists/' + gist_id, {
       headers: {
@@ -30,13 +30,18 @@ export async function importFiles(gist_id: string, file?: string) {
         throw new Error((`Missing ${file}`))
       }
     }
-    if (file) {
-      return { 
-        file, 
-        content: await readFilesContent(resp.data.files[file].raw_url),
-      }
+    let filesToFetch = FILES;
+    if (typeof file === "string") {
+      filesToFetch = [file];
+      // return { 
+      //   file, 
+      //   content: await readFilesContent(resp.data.files[file].raw_url),
+      // }
+    } else if (Array.isArray(file)){
+      filesToFetch = file;
     }
-    const filesContent = await Promise.all(FILES.map(async file => {
+    
+    const filesContent = await Promise.all(filesToFetch.map(async file => {
       return { 
         file, 
         content: await readFilesContent(resp.data.files[file].raw_url),

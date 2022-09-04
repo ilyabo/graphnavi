@@ -1,19 +1,30 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import { ChakraProvider, Flex, Heading, Spacer, Text } from "@chakra-ui/react";
+import { Button, ChakraProvider, Flex, Heading, Icon, Menu, MenuButton, MenuItem, MenuList, Spacer, Text } from "@chakra-ui/react";
 import MainView from "../components/MainView";
 import "react-mosaic-component/react-mosaic-component.css";
 import theme from "../theme";
+import { Authentication } from "../components/Authentication";
+import { ChevronDownIcon, DownloadIcon } from "@chakra-ui/icons";
+import { AiFillGithub } from "react-icons/ai";
+import { importFiles } from "../lib/save";
+import { useEffect } from "react";
+import { useRouter } from "next/router";
 
 const Home: NextPage = () => {
-  // useEffect(() => {
-  //   getDuckConn();
-  // }, []);
-  // const [mounted, setMounted] = useState(false);
-  // useEffect(() => {
-  //   setMounted(true);
-  // }, []);
-  // if (!mounted) return null;
+  
+  const router = useRouter()
+  let filesContent;
+  useEffect(() => {
+
+    if (router.query.gist) {
+      importFiles(String(router.query.gist)).then(resp => {
+        filesContent = resp;
+        console.log(filesContent);
+      })
+    }
+
+  })
   return (
     <ChakraProvider theme={theme}>
       <Head>
@@ -37,7 +48,7 @@ const Home: NextPage = () => {
           px={5}
           pt={3}
           mx={"auto"}
-          // maxW={"6xl"}
+        // maxW={"6xl"}
         >
           <Flex direction={"row"} alignItems={"center"} gap={5}>
             <Heading fontSize="2xl" display={"flex"}>
@@ -64,8 +75,32 @@ const Home: NextPage = () => {
           {/*    />*/}
           {/*  </Flex>*/}
           {/*</a>*/}
+          <Authentication></Authentication>
+          <Menu>
+            <MenuButton
+              as={Button}
+              rightIcon={<ChevronDownIcon
+              // size={"sm"}
+              />}>
+              Save
+            </MenuButton>
+            <MenuList>
+              <MenuItem
+                isDisabled={true}
+                icon={<Icon as={AiFillGithub} h={5} w={5} />}
+              >
+                GitHub Gist
+              </MenuItem>
+              <MenuItem
+                // disabled={!results || loading || error}
+                icon={<Icon as={DownloadIcon} h={5} w={5} />}
+              // onClick={handleDownload}
+              >
+                Download CSV
+              </MenuItem>
+            </MenuList>
+          </Menu>
         </Flex>
-
         <Flex as={"main"} w={"100vw"} height={"100%"}>
           <MainView />
         </Flex>

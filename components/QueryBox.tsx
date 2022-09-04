@@ -28,6 +28,7 @@ type Props = {
   isValidResult: (table: Table) => string | undefined;
   onResult: (table: Table) => void;
   onError: (msg: string) => void;
+  content?: string;
 };
 
 const ACE_EDITOR_OPTIONS = {
@@ -45,12 +46,13 @@ const QueryBox: FC<Props> = (props) => {
 
   const localStorageKey = `queryBox.${id}.lastQuery`;
   const [query, setQuery] = useState(
-    localStorage.getItem(localStorageKey) ?? ""
+    localStorage.getItem(localStorageKey) ?? props.content ?? ""
     //`SELECT count(*) FROM ${tableName}`
   );
   const [resultsInternal, setResultsInternal] = useState<Table>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const [content, setContent] = useState(props.content);
   const handleRun = useCallback(async () => {
     const conn = duckConn?.conn;
     if (!conn) return;

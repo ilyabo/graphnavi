@@ -1,5 +1,5 @@
 import { Flex, Heading, useToast } from "@chakra-ui/react";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Mosaic, MosaicNode } from "react-mosaic-component";
 import GraphView from "./GraphView";
 import { Table } from "apache-arrow";
@@ -8,6 +8,8 @@ import { EdgeFields, GraphEdge, GraphNode, NodeFields } from "../types";
 import FilesArea from "./FilesArea";
 // import CsvDropzone from "./CsvDropzone";
 import QueryBox from "./QueryBox";
+import { useRouter } from "next/router";
+import { importFiles } from "../lib/save";
 
 export interface Props {}
 
@@ -20,6 +22,7 @@ const MainView: React.FC<Props> = (props) => {
   const [nodeFieldsAvail, setNodeFieldsAvail] =
     useState<Record<NodeFields, boolean>>();
   const toast = useToast();
+  console.log(props)
 
   const [mosaicState, setMosaicState] = useState<MosaicNode<string> | null>({
     direction: "row",
@@ -37,6 +40,25 @@ const MainView: React.FC<Props> = (props) => {
     },
     splitPercentage: 20,
   });
+
+  const [egdesText, setEdgesText] = useState("")
+  const [nodesText, setNodesText] = useState("")
+  const router = useRouter()
+  // useEffect(() => {
+    console.log('Main view');
+    if (router.query.gist) {
+      importFiles(String(router.query.gist), 'nodes.sql').then(resp => {
+        console.log(resp);
+        setNodesText(resp[0].content);
+        // setNodes(resp[0].content);
+      })
+      importFiles(String(router.query.gist), 'edges.sql').then(resp => {
+        console.log(resp);
+        setEdgesText(resp[0].content);
+        // setNodes(resp[0].content);
+      })
+    }
+  // }, []);
 
   const [nodes, setNodes] = useState<GraphNode[]>();
   const [edges, setEdges] = useState<GraphEdge[]>();
@@ -123,6 +145,7 @@ const MainView: React.FC<Props> = (props) => {
           Nodes
         </Heading>
         <QueryBox
+          content={nodesText}
           id={"nodes"}
           isValidResult={validateNodes}
           onResult={handleNodeResults}
@@ -136,6 +159,7 @@ const MainView: React.FC<Props> = (props) => {
           Edges
         </Heading>
         <QueryBox
+          content={egdesText}
           id={"edges"}
           isValidResult={validateEdges}
           onResult={handleEdgeResults}
