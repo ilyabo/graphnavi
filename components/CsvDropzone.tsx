@@ -117,12 +117,12 @@ const CsvDropzone: FC<Props> = (props) => {
                     : "Drop files here to create tables"}
                 </Text>
               </HStack>
-              <Grid templateColumns="auto 1fr" columnGap={3} rowGap={2}>
+              <Flex flexWrap={"wrap"} gap={2} justifyContent={"center"}>
                 <Text fontSize="xs" fontWeight="bold">
                   Supported formats:
                 </Text>
                 <Text fontSize="xs">{ACCEPTED_FORMATS.join(", ")}</Text>
-              </Grid>
+              </Flex>
             </Flex>
           ) : null}
         </Flex>
