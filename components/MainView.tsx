@@ -59,6 +59,7 @@ const MainView: React.FC<Props> = (props) => {
       });
       importFiles(String(router.query.gist), "edges.sql").then((resp) => {
         console.log(resp);
+        // @ts-ignore
         setEdgesText(resp[0].content);
         // setNodes(resp[0].content);
       });

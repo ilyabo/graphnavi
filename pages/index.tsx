@@ -115,6 +115,7 @@ const Home: NextPage = () => {
                   // size={"sm"}
                   />
                 }
+                size={"sm"}
               >
                 Save
               </MenuButton>

@@ -2,7 +2,11 @@
 
 Network analysis and visualization tool
 
-![image](https://user-images.githubusercontent.com/351828/188308036-c6ccc12b-ec6f-4403-9724-ddeaad5b943c.png)
+![image](https://user-images.githubusercontent.com/351828/188310445-91655c7d-1b60-46d4-b000-b72acd4d2be1.png)
+
+https://user-images.githubusercontent.com/351828/188310397-9a14b73f-41ba-47e3-b1df-88fa0b400cd3.mp4
+
+
 
 ## Rationale
 Network analysis tools can be intimidating, and especially, the data preparation in the form that these tools expect (which often involves combining multiple datasets) can be very time consuming.
@@ -13,9 +17,12 @@ and pass the results to a graph layout engine to visualize them as a network.
 
 
 ## Roadmap
-- Saving added datasets and queries to GitHub Gists
-- Support for more visual attributes: node sizes, colors, edge thickness, color, edge labels
 - Non-expert mode not requiring familiarity with SQL
+- Support for more visual attributes: node sizes, colors, edge thickness, color, edge labels
+- Saving added datasets and queries to GitHub Gists
+- Query history
+- Table view for the input files and for the query results
+- Pass table schema to the query auto-completion engine
 - More efficient data structures (arrow) for the graph/layout to support larger graphs  
 - Graph layout taking node/edge weights/importance into account (e.g. [like this one](https://networkofthrones.wordpress.com/)) 
 - Consider using other graph rendering approaches: [one](https://observablehq.com/@zakjan/force-directed-graph-pixi), [two](https://bl.ocks.org/BTKY/6c282b65246f8f46bb55aadc322db709), [three](https://observablehq.com/@subbuballa/force-directed-graph) 

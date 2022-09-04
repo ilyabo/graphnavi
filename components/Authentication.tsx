@@ -79,12 +79,14 @@ export function Authentication() {
   return (
     <>
       <div>
-        <Button onClick={onOpen}>Authentication</Button>
+        <Button onClick={onOpen} size={"sm"}>
+          Sign In
+        </Button>
 
         <Modal isOpen={isOpen} onClose={onClose}>
           <ModalOverlay />
           <ModalContent>
-            <ModalHeader>Authentication</ModalHeader>
+            <ModalHeader>Sign In</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
               <Flex flexDirection="column">
@@ -108,8 +110,7 @@ export function Authentication() {
                       </Button>
                     </NextLink>
                     <div>
-                      Authenticate with GitHub to save your graphs to GitHub
-                      Gists
+                      Sign in to GitHub to save your graphs to GitHub Gists
                     </div>
                   </div>
                 ) : (
