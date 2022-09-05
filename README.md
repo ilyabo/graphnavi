@@ -27,7 +27,7 @@ and pass the results to a graph layout engine to visualize them as a network.
 - Graph layout taking node/edge weights/importance into account (e.g. [like this one](https://networkofthrones.wordpress.com/)) 
 - Consider using other graph rendering approaches: [one](https://observablehq.com/@zakjan/force-directed-graph-pixi), [two](https://bl.ocks.org/BTKY/6c282b65246f8f46bb55aadc322db709), [three](https://observablehq.com/@subbuballa/force-directed-graph)
 - Weighted [one](https://observablehq.com/@stefanwenger/game-of-thrones-character-influence), [two](https://observablehq.com/@ericmauviere/graphology-et-migrations-residentielles-entre-aires), [three](https://observablehq.com/@jrladd/gotgraphology), [four](https://observablehq.com/@mef/forceatlas2-layout-settings-visualized)
-
+- Potentially: Try again to integrate [Graphistry.js](https://github.com/graphistry/graphistry-js)
 
 ## Development
 
