@@ -21,7 +21,7 @@ and pass the results to a graph layout engine to visualize them as a network.
 - Support for more visual attributes: node sizes, colors, edge thickness, color, edge labels
 - Saving added datasets and queries to GitHub Gists
 - Query history
-- Table view for the input files and for the query results
+- Table view for the input files and for the query results (e.g. [react-turntable](https://react-turntable.netlify.app/?path=/story/virtualizedtables-examples--advanced))
 - Pass table schema to the query auto-completion engine
 - More efficient data structures (arrow) for the graph/layout to support larger graphs  
 - Graph layout taking node/edge weights/importance into account (e.g. [like this one](https://networkofthrones.wordpress.com/)) 
