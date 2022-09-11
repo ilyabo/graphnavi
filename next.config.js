@@ -3,6 +3,11 @@ const nextConfig = {
   // reactStrictMode: true,
   reactStrictMode: false,
   swcMinify: false,
+  experimental: {
+    esmExternals: "loose",
+  },
 };
 
-module.exports = nextConfig;
+const withTM = require("next-transpile-modules")(["@cosmograph/cosmos"]);
+
+module.exports = withTM(nextConfig);

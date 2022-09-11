@@ -1,5 +1,6 @@
 import React, { FC, ReactNode } from "react";
 import {
+  Box,
   Button,
   Popover,
   PopoverArrow,
@@ -28,7 +29,7 @@ const InfoBox: FC<{ children: ReactNode }> = ({ children }) => {
           {/*  {title}*/}
           {/*</PopoverHeader>*/}
           <PopoverBody>
-            <Text fontSize="sm">{children}</Text>
+            <Box fontSize="sm">{children}</Box>
           </PopoverBody>
         </PopoverContent>
       </Portal>

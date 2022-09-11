@@ -15,14 +15,14 @@ type Props = {
 };
 
 const FilesArea: FC<Props> = (props) => {
-  const router = useRouter()
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [fileContent, setFileContent] = useState("asd");
   useEffect(() => {
     if (router.query.gist) {
-      importFiles(String(router.query.gist), 'data.csv').then(resp => {
+      importFiles(String(router.query.gist), "data.csv").then((resp) => {
         setFileContent(resp[0].content);
-      })
+      });
     }
     setMounted(true);
   }, []);
@@ -37,9 +37,8 @@ const FilesArea: FC<Props> = (props) => {
         <Suspense fallback={<SpinnerPane h={"100%"} />}>
           <CsvDropzone
             tables={value}
-            onTableCreated={(inputTableName: string, result) => {
-              console.log(inputTableName, result);
-              setValue([...value, result]);
+            onTableCreated={(tables) => {
+              setValue([...value, ...tables]);
             }}
             onChange={(result) => {
               console.log("onChange", result);

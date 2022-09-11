@@ -9,7 +9,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Mosaic, MosaicNode } from "react-mosaic-component";
 import GraphView from "./GraphView";
 import { Table } from "apache-arrow";
-import { JSONLoader } from "graph.gl";
 import { EdgeFields, GraphEdge, GraphNode, NodeFields } from "../types";
 import FilesArea from "./FilesArea";
 // import CsvDropzone from "./CsvDropzone";
@@ -25,9 +24,8 @@ export interface Props {}
 // });
 
 const MainView: React.FC<Props> = (props) => {
-  const [updateIndex, setUpdateIndex] = useState(0);
-  const [nodeFieldsAvail, setNodeFieldsAvail] =
-    useState<Record<NodeFields, boolean>>();
+  const [nodeFields, setNodeFields] = useState<Record<NodeFields, boolean>>();
+  const [edgeFields, setEdgeFields] = useState<Record<EdgeFields, boolean>>();
   const toast = useToast();
 
   const [mosaicState, setMosaicState] = useState<MosaicNode<string> | null>({
@@ -69,66 +67,57 @@ const MainView: React.FC<Props> = (props) => {
   const [nodes, setNodes] = useState<GraphNode[]>();
   const [edges, setEdges] = useState<GraphEdge[]>();
   const graph = useMemo(() => {
-    const nextUpdateIndex = updateIndex + 1;
-    setUpdateIndex(nextUpdateIndex);
-    const graph = JSONLoader({
-      json: {
-        nodes: nodes ?? [],
-        edges: edges ?? [],
-      },
-      // nodeParser: (node: any) => ({ id: node.id }),
-      // edgeParser: (edge: any) => ({
-      //   id: edge.id,
-      //   sourceId: edge.sourceId,
-      //   targetId: edge.targetId,
-      //   directed: true,
-      // }),
-    });
-    // graph.setGraphName("123");
+    const graph = {
+      nodes: nodes ?? [],
+      edges: edges ?? [],
+    };
     return graph;
   }, [nodes, edges]);
 
   const handleNodeResults = (table: Table) => {
-    const schema = table.schema;
     const nodes = Array.from(
       (function* () {
         for (let ri = 0; ri < table.numRows; ri++) {
           const node: Record<string, any> = {};
-          for (const field of schema.fields) {
-            node[field.name] = `${table.getChild(field.name)?.get(ri)}`;
+          for (const field of table.schema.fields) {
+            node[field.name.toLowerCase()] = `${table
+              .getChild(field.name)
+              ?.get(ri)}`;
           }
-          // yield {
-          //   id: table.getChild("id")?.get(i),
-          //   name: table.getChild("name")?.get(i),
-          // };
           yield node as GraphNode;
         }
       })()
     );
     setNodes(nodes);
-    const hasField = (fName: NodeFields) =>
-      Boolean(schema.fields.find((f) => f.name === fName));
-    setNodeFieldsAvail({
-      [NodeFields.ID]: hasField(NodeFields.ID),
-      [NodeFields.LABEL]: hasField(NodeFields.LABEL),
-      [NodeFields.COLOR]: hasField(NodeFields.COLOR),
-      [NodeFields.SIZE]: hasField(NodeFields.SIZE),
+    setNodeFields({
+      [NodeFields.ID]: hasField(table, NodeFields.ID),
+      [NodeFields.LABEL]: hasField(table, NodeFields.LABEL),
+      [NodeFields.COLOR]: hasField(table, NodeFields.COLOR),
+      [NodeFields.SIZE]: hasField(table, NodeFields.SIZE),
     });
   };
   const handleEdgeResults = (table: Table) => {
     const edges = Array.from(
       (function* () {
-        for (let i = 0; i < table.numRows; i++) {
-          yield {
-            id: `${i}`,
-            sourceId: table.getChild(EdgeFields.SOURCE)?.get(i),
-            targetId: table.getChild(EdgeFields.TARGET)?.get(i),
-            directed: true,
-          };
+        for (let ri = 0; ri < table.numRows; ri++) {
+          const edge: Record<string, any> = {};
+          for (const field of table.schema.fields) {
+            edge[field.name.toLowerCase()] = `${table
+              .getChild(field.name)
+              ?.get(ri)}`;
+          }
+          yield edge as GraphEdge;
         }
       })()
     );
     setEdges(edges);
+    setEdgeFields({
+      [EdgeFields.ID]: hasField(table, EdgeFields.ID),
+      [EdgeFields.SOURCE]: hasField(table, EdgeFields.SOURCE),
+      [EdgeFields.TARGET]: hasField(table, EdgeFields.TARGET),
+      [EdgeFields.LABEL]: hasField(table, EdgeFields.LABEL),
+      [EdgeFields.WIDTH]: hasField(table, EdgeFields.WIDTH),
+    });
   };
 
   const handleError = (message: string) => {
@@ -163,8 +152,9 @@ const MainView: React.FC<Props> = (props) => {
               The query result should have the following columns:`}
               columnsList={
                 <UnorderedList>
-                  <ListItem>id</ListItem>
-                  <ListItem>label (optional)</ListItem>
+                  <ListItem>id: string</ListItem>
+                  <ListItem>label: string (optional)</ListItem>
+                  <ListItem>size: string (optional)</ListItem>
                 </UnorderedList>
               }
               queryExample={`SELECT 
@@ -194,8 +184,9 @@ FROM my_nodes_table`}
               The query result should have the following columns:`}
               columnsList={
                 <UnorderedList>
-                  <ListItem>source</ListItem>
-                  <ListItem>target</ListItem>
+                  <ListItem>source: string</ListItem>
+                  <ListItem>target: string</ListItem>
+                  <ListItem>width: number (optional)</ListItem>
                 </UnorderedList>
               }
               queryExample={`SELECT 
@@ -209,9 +200,9 @@ FROM my_edges_table`}
     ),
     graphView: (
       <GraphView
-        updateIndex={updateIndex}
         graph={graph}
-        nodeFieldsAvail={nodeFieldsAvail}
+        nodeFields={nodeFields}
+        edgeFields={edgeFields}
       />
     ),
   };
@@ -247,8 +238,15 @@ FROM my_edges_table`}
   );
 };
 
+const hasField = (table: Table, name: string) => {
+  const lcName = name.toLowerCase();
+  const { fields } = table.schema;
+  return Boolean(fields.find((f) => f.name.toLowerCase() === lcName));
+};
+
 function checkHasColumn(table: Table, name: string) {
-  if (!table.getChild(name)) {
+  // if (!table.getChild(name)) {
+  if (!hasField(table, name)) {
     return `Column '${name}' is missing in the query result`;
   }
   return undefined;

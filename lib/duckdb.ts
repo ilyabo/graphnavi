@@ -22,9 +22,8 @@ export async function maybeDropTable(value?: TableInfo, duckConn?: DuckConn) {
 
 export async function createTableFromFile(
   file: File,
-  duckConn: DuckConn,
-  onTableCreated: (inputTableName: string, result: TableInfo) => void
-) {
+  duckConn: DuckConn
+): Promise<TableInfo> {
   const inputFileName = file.name;
   await duckConn.db.dropFile(inputFileName);
   await duckConn.db.registerFileHandle(inputFileName, file);
@@ -58,5 +57,5 @@ export async function createTableFromFile(
     inputTableFields,
   };
   // setResult(nextResult);
-  onTableCreated(inputTableName, nextResult);
+  return nextResult;
 }

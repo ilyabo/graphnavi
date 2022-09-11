@@ -1,37 +1,95 @@
-import React, { FC, useState } from "react";
-import GraphGL from "../lib/graphgl";
-import { D3ForceLayout, NODE_TYPE } from "graph.gl";
-import { Box, Flex, Text, useTheme } from "@chakra-ui/react";
-import { Graph, NodeFields } from "../types";
+import React, { FC, useEffect, useMemo, useState } from "react";
+import { Box, Button, Flex, Icon, Text, useTheme } from "@chakra-ui/react";
+import { PauseIcon, PlayIcon } from "@heroicons/react/solid";
+import { EdgeFields, Graph, GraphEdge, GraphNode, NodeFields } from "../types";
 import TooltipBox from "./TooltipBox";
+import {
+  Graph as CosmoGraph,
+  GraphConfigInterface,
+  Node,
+} from "@cosmograph/cosmos";
 
 type Props = {
-  updateIndex: number;
   graph?: Graph;
-  nodeFieldsAvail?: Record<NodeFields, boolean>;
+  nodeFields?: Record<NodeFields, boolean>;
+  edgeFields?: Record<EdgeFields, boolean>;
 };
 
 const GraphView: FC<Props> = (props) => {
-  const { updateIndex, graph, nodeFieldsAvail } = props;
+  const { graph, nodeFields, edgeFields } = props;
   const theme = useTheme();
   // const showNodeLabel = true;
   const nodeLabelSize = 10;
-  // console.log("nodeFieldsAvail", nodeFieldsAvail);
 
-  const [hoverNode, setHoverNode] = useState<Record<string, string>>();
-  const handleNodeClick = (info: any) => {
-    console.log("handleNodeClick", info);
-  };
+  const graphConfig = useMemo((): GraphConfigInterface<
+    GraphNode,
+    GraphEdge
+  > => {
+    return {
+      backgroundColor: theme.colors.gray[900],
+      nodeColor: "#DD7BB8",
+      linkColor: "#677194",
+      linkArrows: false,
+      simulation: {
+        repulsion: 0.5,
+      },
+      renderLinks: true,
+      // linkColor: link => link.color,
+      // nodeColor: node => node.color,
+      nodeSizeScale: 0.5,
+      ...(nodeFields?.[NodeFields.SIZE]
+        ? { nodeSize: (node) => Number(node.size ?? 0) }
+        : null),
+      linkWidthScale: 1,
+      ...(edgeFields?.[EdgeFields.WIDTH]
+        ? { linkWidth: (edge) => Number(edge.width ?? 0) }
+        : null),
+      events: {
+        onClick: (node: Node<GraphNode> | undefined) => {
+          console.log("Clicked node: ", node);
+          setHoverNode(node);
+        },
+      },
+    };
+  }, []);
   const handleNodeHover = (info: any) => {
     const { object } = info;
     // console.log(object);
     if (object) {
-      setHoverNode({
-        ...object._data,
-        edges: Object.keys(object._connectedEdges).length,
-      });
+      setHoverNode(object._data);
     }
   };
+  const canvasRef = React.useRef<HTMLCanvasElement>(null);
+  const cosmoGraphRef = React.useRef<CosmoGraph<GraphNode, GraphEdge>>();
+  useEffect(() => {
+    if (canvasRef.current) {
+      cosmoGraphRef.current = new CosmoGraph<GraphNode, GraphEdge>(
+        canvasRef.current,
+        graphConfig
+      );
+    }
+  }, [canvasRef.current]);
+  useEffect(() => {
+    if (canvasRef.current && cosmoGraphRef.current) {
+      if (graph.nodes?.length && graph.edges?.length) {
+        cosmoGraphRef.current.setData(graph.nodes, graph.edges);
+        setIsPlaying(true);
+      }
+    }
+  }, [canvasRef.current, cosmoGraphRef.current, graph]);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const handleTogglePlay = () => {
+    if (cosmoGraphRef.current) {
+      if (isPlaying) {
+        cosmoGraphRef.current.pause();
+      } else {
+        cosmoGraphRef.current.restart();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+  const [hoverNode, setHoverNode] = useState<Node<GraphNode>>();
+
   const handleNodeMouseLeave = () => {
     setHoverNode(undefined);
   };
@@ -41,47 +99,15 @@ const GraphView: FC<Props> = (props) => {
       width={"100%"}
       height={"100%"}
       background={"gray.800"}
-      px={2}
-      py={2}
+      p={0}
     >
       {graph ? (
-        <GraphGL
-          // key={updateIndex}
-          // updateIndex={updateIndex}
-          graph={graph}
-          layout={new D3ForceLayout()}
-          nodeStyle={[
-            {
-              type: NODE_TYPE.CIRCLE,
-              radius: 5,
-              fill: theme.colors.gray[400],
-              ":hover": {
-                radius: 7,
-                fill: theme.colors.blue[500],
-              },
-            },
-            nodeFieldsAvail?.[NodeFields.LABEL] && {
-              type: NODE_TYPE.LABEL,
-              text: (node: any) => node._data[NodeFields.LABEL],
-              color: [255, 255, 255, 255],
-              // color: Color(this.props.nodeLabelColor).array(),
-              alignmentBaseline: "top",
-              fontSize: nodeLabelSize,
-              offset: [0, 7],
-            },
-          ]}
-          edgeStyle={{
-            stroke: theme.colors.gray[600],
-            strokeWidth: 1.5,
-            // ":hover": {
-            //   radius: 10,
-            //   fill: theme.colors.blue[500],
-            // },
-          }}
-          nodeEvents={{
-            onClick: handleNodeClick,
-            onHover: handleNodeHover,
-            onMouseLeave: handleNodeMouseLeave,
+        <canvas
+          ref={canvasRef}
+          style={{
+            width: "100%",
+            height: "100%",
+            position: "absolute",
           }}
         />
       ) : (
@@ -102,6 +128,17 @@ const GraphView: FC<Props> = (props) => {
         </Flex>
       )}
       {hoverNode ? <TooltipBox title={"Node"} values={hoverNode} /> : null}
+      <Box position={"absolute"} top={2} right={2}>
+        <Button
+          variant="ghost"
+          color="gray.400"
+          onClick={handleTogglePlay}
+          isDisabled={!cosmoGraphRef.current}
+          leftIcon={<Icon w={8} h={8} as={isPlaying ? PauseIcon : PlayIcon} />}
+        >
+          {isPlaying ? "Pause" : "Play"}
+        </Button>
+      </Box>
     </Flex>
   );
 };

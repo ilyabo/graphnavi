@@ -1,10 +1,10 @@
 import React, { FC } from "react";
 import { useDropzone } from "react-dropzone";
 
-import { Box, Flex, Grid, HStack, Icon, Text, VStack } from "@chakra-ui/react";
+import { Box, Flex, HStack, Icon, Text, VStack } from "@chakra-ui/react";
 import { DocumentAddIcon } from "@heroicons/react/solid";
 import { useDuckConn } from "../lib/useDuckConn";
-import { createTableFromFile, TableInfo, maybeDropTable } from "../lib/duckdb";
+import { createTableFromFile, TableInfo } from "../lib/duckdb";
 import FileCard from "./FileCard";
 
 const ACCEPTED_FORMATS = [
@@ -20,7 +20,7 @@ export type Props = {
   isInvalid?: boolean;
   onReset: () => void;
   onChange: (result: TableInfo) => void;
-  onTableCreated: (inputTableName: string, result: TableInfo) => void;
+  onTableCreated: (tables: TableInfo[]) => void;
   onError: (message: string) => void;
 };
 
@@ -39,7 +39,11 @@ const CsvDropzone: FC<Props> = (props) => {
   const handleDrop = async (files: File[]) => {
     // await maybeDropTable(value, duckConn);
     try {
-      await createTableFromFile(files[0], duckConn, onTableCreated);
+      onTableCreated(
+        await Promise.all(
+          files.map((file) => createTableFromFile(file, duckConn))
+        )
+      );
     } catch (e) {
       // onError(`Couldn't create table: ${e instanceof Error ? e.message : e}`);
       onError(`Couldn't create table`);
@@ -50,8 +54,8 @@ const CsvDropzone: FC<Props> = (props) => {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: handleDrop,
     accept: ACCEPTED_FORMATS,
-    maxFiles: 1,
-    multiple: false,
+    // maxFiles: 1,
+    multiple: true,
   });
 
   const activeBg = "gray.700";

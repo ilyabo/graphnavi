@@ -3,13 +3,13 @@ export type Graph = any;
 export type GraphNode = {
   id: string;
   name?: string;
+  size?: number;
 };
 
 export type GraphEdge = {
-  id: string;
-  sourceId: string;
-  targetId: string;
-  directed: boolean;
+  source: string;
+  target: string;
+  width?: number;
 };
 
 // export type GraphAttrsAvail = {
@@ -33,4 +33,5 @@ export enum EdgeFields {
   SOURCE = "source",
   TARGET = "target",
   LABEL = "label",
+  WIDTH = "width",
 }
