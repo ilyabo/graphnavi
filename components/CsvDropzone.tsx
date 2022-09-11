@@ -1,11 +1,12 @@
-import React, { FC } from "react";
+import React, { FC, useEffect, useRef } from "react";
 import { useDropzone } from "react-dropzone";
 
 import { Box, Flex, HStack, Icon, Text, VStack } from "@chakra-ui/react";
 import { DocumentAddIcon } from "@heroicons/react/solid";
 import { useDuckConn } from "../lib/useDuckConn";
-import { createTableFromFile, TableInfo } from "../lib/duckdb";
+import { createTableFromFile, makeTableName, TableInfo } from "../lib/duckdb";
 import FileCard from "./FileCard";
+import { GistResults } from "../types";
 
 const ACCEPTED_FORMATS = [
   ".csv",
@@ -17,6 +18,7 @@ const ACCEPTED_FORMATS = [
 
 export type Props = {
   tables?: TableInfo[];
+  csvFiles?: GistResults["csvFiles"];
   isInvalid?: boolean;
   onReset: () => void;
   onChange: (result: TableInfo) => void;
@@ -25,8 +27,15 @@ export type Props = {
 };
 
 const CsvDropzone: FC<Props> = (props) => {
-  const { tables, isInvalid, onError, onTableCreated, onChange, onReset } =
-    props;
+  const {
+    csvFiles,
+    tables,
+    isInvalid,
+    onError,
+    onTableCreated,
+    onChange,
+    onReset,
+  } = props;
 
   const handleReset = async () => {
     // await maybeDropTable(tables, duckConn);
@@ -38,18 +47,32 @@ const CsvDropzone: FC<Props> = (props) => {
 
   const handleDrop = async (files: File[]) => {
     // await maybeDropTable(value, duckConn);
-    try {
-      onTableCreated(
-        await Promise.all(
-          files.map((file) => createTableFromFile(file, duckConn))
-        )
-      );
-    } catch (e) {
-      // onError(`Couldn't create table: ${e instanceof Error ? e.message : e}`);
-      onError(`Couldn't create table`);
-      console.log(e);
+    for (const file of files) {
+      try {
+        const table = await createTableFromFile(file, duckConn);
+        onTableCreated([table]);
+      } catch (e) {
+        // onError(`Couldn't create table: ${e instanceof Error ? e.message : e}`);
+        onError(`Couldn't create table`);
+        console.log(e);
+      }
     }
   };
+
+  const csvFilesAdded = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    (async () => {
+      if (csvFiles) {
+        for (const [fname, content] of Object.entries(csvFiles)) {
+          console.log("fname", fname, csvFilesAdded.current.has(fname));
+          if (!csvFilesAdded.current.has(fname)) {
+            csvFilesAdded.current.add(fname); // prevent re-adding
+            await handleDrop([new File([content], fname)]);
+          }
+        }
+      }
+    })();
+  }, [csvFiles]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: handleDrop,

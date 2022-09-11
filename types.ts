@@ -35,3 +35,10 @@ export enum EdgeFields {
   LABEL = "label",
   WIDTH = "width",
 }
+
+export type GistResults = {
+  isDataLoading?: boolean;
+  nodesQuery?: string;
+  edgesQuery?: string;
+  csvFiles?: Record<string, string>;
+};

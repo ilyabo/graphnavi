@@ -69,7 +69,7 @@ export async function fetchFileFromGist(
       "https://api.github.com/gists/" + gistId
       //   {
       //   headers: {
-      //     Authorization: `Bearer ${process.env.NEXT_PUBLIC_CLIENT_TOKEN}`,
+      //     Authorization: `Bearer ${token}`,
       //   },
       // }
     );

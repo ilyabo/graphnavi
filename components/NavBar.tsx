@@ -5,6 +5,7 @@ import {
   Button,
   Flex,
   Heading,
+  Icon,
   Menu,
   MenuButton,
   MenuList,
@@ -72,40 +73,6 @@ const NavBar: FC<Props> = (props) => {
         <Flex direction={"row"} gap={5}>
           {/*<Authentication></Authentication>*/}
 
-          {session.status !== "authenticated" ? (
-            <>
-              <Button
-                leftIcon={<AiFillGithub />}
-                // onClick={() => signIn("github")}
-                onClick={handleShowLoginWindow}
-                size={"sm"}
-              >
-                Sign In
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button
-                size={"sm"}
-                // onClick={() => signOut()}
-                onClick={handleShowLoginWindow}
-                leftIcon={
-                  session.data.user?.image ? (
-                    <Box borderRadius={"50%"} overflow={"hidden"} mt={1}>
-                      <Image
-                        src={session.data.user.image}
-                        width={20}
-                        height={20}
-                      />
-                    </Box>
-                  ) : undefined
-                }
-              >
-                Sign Out
-              </Button>
-            </>
-          )}
-
           <Menu>
             <MenuButton
               as={Button}
@@ -136,6 +103,39 @@ const NavBar: FC<Props> = (props) => {
               {/*</MenuItem>*/}
             </MenuList>
           </Menu>
+          {session.status !== "authenticated" ? (
+            <>
+              <Button
+                leftIcon={<Icon w={5} h={5} as={AiFillGithub} />}
+                // onClick={() => signIn("github")}
+                onClick={handleShowLoginWindow}
+                size={"sm"}
+              >
+                Sign In
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                size={"sm"}
+                // onClick={() => signOut()}
+                onClick={handleShowLoginWindow}
+                leftIcon={
+                  session.data.user?.image ? (
+                    <Box borderRadius={"50%"} overflow={"hidden"} mt={1}>
+                      <Image
+                        src={session.data.user.image}
+                        width={20}
+                        height={20}
+                      />
+                    </Box>
+                  ) : undefined
+                }
+              >
+                Sign Out
+              </Button>
+            </>
+          )}
         </Flex>
       </Flex>
       {showLogin ? (

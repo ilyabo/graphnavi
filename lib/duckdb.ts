@@ -20,18 +20,20 @@ export async function maybeDropTable(value?: TableInfo, duckConn?: DuckConn) {
   }
 }
 
+export function makeTableName(inputFileName: string): string {
+  return inputFileName.replace(/\.[^\.]*$/, "").replace(/\W/g, "_");
+}
+
 export async function createTableFromFile(
   file: File,
   duckConn: DuckConn
 ): Promise<TableInfo> {
+  console.log("createTableFromFile", file);
   const inputFileName = file.name;
   await duckConn.db.dropFile(inputFileName);
   await duckConn.db.registerFileHandle(inputFileName, file);
 
-  // const inputTableName = genRandomStr(5).toLowerCase();
-  const inputTableName = inputFileName
-    .replace(/\.[^\.]*$/, "")
-    .replace(/\W/g, "_");
+  const inputTableName = makeTableName(inputFileName);
 
   await duckConn.conn.query(`
        CREATE TABLE ${inputTableName} AS SELECT * FROM '${inputFileName}'

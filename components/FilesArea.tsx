@@ -3,31 +3,28 @@ import { Heading } from "@chakra-ui/react";
 import dynamic from "next/dynamic";
 import { TableInfo } from "../lib/duckdb";
 import SpinnerPane from "./SpinnerPane";
-import { useRouter } from "next/router";
-import { fetchFileFromGist } from "../lib/gists";
+import { GistResults } from "../types";
 
 const CsvDropzone = dynamic(() => import("./CsvDropzone"), {
   ssr: false,
 });
 
 type Props = {
+  csvFiles?: GistResults["csvFiles"];
   onError: (message: string) => void;
 };
 
 const FilesArea: FC<Props> = (props) => {
-  const router = useRouter();
+  const { csvFiles, onError } = props;
   const [mounted, setMounted] = useState(false);
-  const [fileContent, setFileContent] = useState("asd");
   useEffect(() => {
-    if (router.query.gist) {
-      fetchFileFromGist(String(router.query.gist), "data.csv").then((resp) => {
-        setFileContent(resp[0].content);
-      });
-    }
     setMounted(true);
   }, []);
-  const { onError } = props;
   const [value, setValue] = useState<TableInfo[]>([]);
+  console.log("value", value);
+  const handleTableCreated = (tables: TableInfo[]) => {
+    setValue([...value, ...tables]);
+  };
   return (
     <>
       <Heading as={"h2"} size={"sm"}>
@@ -36,10 +33,9 @@ const FilesArea: FC<Props> = (props) => {
       {mounted ? (
         <Suspense fallback={<SpinnerPane h={"100%"} />}>
           <CsvDropzone
+            csvFiles={csvFiles}
             tables={value}
-            onTableCreated={(tables) => {
-              setValue([...value, ...tables]);
-            }}
+            onTableCreated={handleTableCreated}
             onChange={(result) => {
               console.log("onChange", result);
             }}

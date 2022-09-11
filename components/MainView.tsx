@@ -9,21 +9,24 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Mosaic, MosaicNode } from "react-mosaic-component";
 import GraphView from "./GraphView";
 import { Table } from "apache-arrow";
-import { EdgeFields, GraphEdge, GraphNode, NodeFields } from "../types";
+import {
+  EdgeFields,
+  GistResults,
+  GraphEdge,
+  GraphNode,
+  NodeFields,
+} from "../types";
 import FilesArea from "./FilesArea";
-// import CsvDropzone from "./CsvDropzone";
 import QueryBox from "./QueryBox";
-import { useRouter } from "next/router";
-import { fetchFileFromGist } from "../lib/gists";
 import QueryHelp from "./QueryHelp";
+import "react-mosaic-component/react-mosaic-component.css";
 
-export interface Props {}
-
-// const QueryBox = dynamic(() => import("./QueryBox"), {
-//   ssr: false,
-// });
+export interface Props {
+  gistResults?: GistResults;
+}
 
 const MainView: React.FC<Props> = (props) => {
+  const { gistResults } = props;
   const [nodeFields, setNodeFields] = useState<Record<NodeFields, boolean>>();
   const [edgeFields, setEdgeFields] = useState<Record<EdgeFields, boolean>>();
   const toast = useToast();
@@ -45,25 +48,8 @@ const MainView: React.FC<Props> = (props) => {
     splitPercentage: 20,
   });
 
-  const [egdesText, setEdgesText] = useState("");
-  const [nodesText, setNodesText] = useState("");
-  const router = useRouter();
-  useEffect(() => {
-    if (router.query.gist) {
-      fetchFileFromGist(String(router.query.gist), "nodes.sql").then((resp) => {
-        console.log(resp);
-        setNodesText(resp[0].content);
-        // setNodes(resp[0].content);
-      });
-      fetchFileFromGist(String(router.query.gist), "edges.sql").then((resp) => {
-        console.log(resp);
-        // @ts-ignore
-        setEdgesText(resp[0].content);
-        // setNodes(resp[0].content);
-      });
-    }
-  }, []);
-
+  // const [nodesText, setNodesText] = useState('');
+  // const [egdesText, setEdgesText] = useState('');
   const [nodes, setNodes] = useState<GraphNode[]>();
   const [edges, setEdges] = useState<GraphEdge[]>();
   const graph = useMemo(() => {
@@ -96,6 +82,7 @@ const MainView: React.FC<Props> = (props) => {
       [NodeFields.SIZE]: hasField(table, NodeFields.SIZE),
     });
   };
+
   const handleEdgeResults = (table: Table) => {
     const edges = Array.from(
       (function* () {
@@ -132,7 +119,9 @@ const MainView: React.FC<Props> = (props) => {
   };
 
   const views: { [viewId: string]: JSX.Element } = {
-    filesArea: <FilesArea onError={handleError} />,
+    filesArea: (
+      <FilesArea csvFiles={gistResults?.csvFiles} onError={handleError} />
+    ),
 
     nodesQueryBox: (
       <>
@@ -140,7 +129,7 @@ const MainView: React.FC<Props> = (props) => {
           Nodes
         </Heading>
         <QueryBox
-          content={nodesText}
+          query={gistResults?.nodesQuery ?? ""}
           id={"nodes"}
           isValidResult={validateNodes}
           onResult={handleNodeResults}
@@ -172,7 +161,7 @@ FROM my_nodes_table`}
           Edges
         </Heading>
         <QueryBox
-          content={egdesText}
+          query={gistResults?.edgesQuery ?? ""}
           id={"edges"}
           isValidResult={validateEdges}
           onResult={handleEdgeResults}
