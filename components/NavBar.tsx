@@ -1,5 +1,7 @@
 import React, { FC, useState } from "react";
+import Image from "next/image";
 import {
+  Box,
   Button,
   Flex,
   Heading,
@@ -87,6 +89,17 @@ const NavBar: FC<Props> = (props) => {
                 size={"sm"}
                 // onClick={() => signOut()}
                 onClick={handleShowLoginWindow}
+                leftIcon={
+                  session.data.user?.image ? (
+                    <Box borderRadius={"50%"} overflow={"hidden"} mt={1}>
+                      <Image
+                        src={session.data.user.image}
+                        width={20}
+                        height={20}
+                      />
+                    </Box>
+                  ) : undefined
+                }
               >
                 Sign Out
               </Button>
