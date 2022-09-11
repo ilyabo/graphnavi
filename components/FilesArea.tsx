@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { TableInfo } from "../lib/duckdb";
 import SpinnerPane from "./SpinnerPane";
 import { useRouter } from "next/router";
-import { importFiles } from "../lib/save";
+import { fetchFileFromGist } from "../lib/gists";
 
 const CsvDropzone = dynamic(() => import("./CsvDropzone"), {
   ssr: false,
@@ -20,7 +20,7 @@ const FilesArea: FC<Props> = (props) => {
   const [fileContent, setFileContent] = useState("asd");
   useEffect(() => {
     if (router.query.gist) {
-      importFiles(String(router.query.gist), "data.csv").then((resp) => {
+      fetchFileFromGist(String(router.query.gist), "data.csv").then((resp) => {
         setFileContent(resp[0].content);
       });
     }

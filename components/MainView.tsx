@@ -14,7 +14,7 @@ import FilesArea from "./FilesArea";
 // import CsvDropzone from "./CsvDropzone";
 import QueryBox from "./QueryBox";
 import { useRouter } from "next/router";
-import { importFiles } from "../lib/save";
+import { fetchFileFromGist } from "../lib/gists";
 import QueryHelp from "./QueryHelp";
 
 export interface Props {}
@@ -50,12 +50,12 @@ const MainView: React.FC<Props> = (props) => {
   const router = useRouter();
   useEffect(() => {
     if (router.query.gist) {
-      importFiles(String(router.query.gist), "nodes.sql").then((resp) => {
+      fetchFileFromGist(String(router.query.gist), "nodes.sql").then((resp) => {
         console.log(resp);
         setNodesText(resp[0].content);
         // setNodes(resp[0].content);
       });
-      importFiles(String(router.query.gist), "edges.sql").then((resp) => {
+      fetchFileFromGist(String(router.query.gist), "edges.sql").then((resp) => {
         console.log(resp);
         // @ts-ignore
         setEdgesText(resp[0].content);

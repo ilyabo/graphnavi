@@ -22,27 +22,6 @@ export function isAuthenticated(cookies: any, type: "github" | string) {
   return cookies[type + "-token"];
 }
 
-function requestGithubToken(
-  code: string,
-  setCookie: (name: string, value: string) => void
-) {
-  axios
-    .post("https://github.com/login/oauth/access_token", {
-      params: {
-        client_id: process.env.NEXT_PUBLIC_CLIENT_ID,
-        client_secret: process.env.NEXT_PUBLIC_CLIENT_SECRET,
-        code,
-      },
-    })
-    .then((resp) => {
-      console.log(resp);
-      // setCookie('github-token', resp.data.access_token);
-    })
-    .catch((err) => {
-      console.log("Error GitHub authentication");
-    });
-}
-
 // const [cookies, setCookie, removeCookie] = useCookies(['github-token']);
 export function Authentication() {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -50,28 +29,26 @@ export function Authentication() {
 
   const router = useRouter();
 
-  const [isAuthenticatedGithub, setisAuthenticatedGithub] = useState(false);
+  const [isGithubAuth, setIsGithubAuth] = useState(false);
 
   useEffect(() => {
     // Finish authentication
     if (router.query.code && !cookies["github-token"]) {
       console.log("Finish authentication");
-      axios
-        .get(`http://localhost:3000/api/github?code=${router.query.code}`)
-        .then((resp) => {
-          console.log(resp);
-          try {
-            setCookie("github-token", resp.data);
-            router.replace("/", undefined, { shallow: true });
-          } catch (error) {
-            console.log(error);
-          }
-        });
+      axios.get(`/api/github?code=${router.query.code}`).then((resp) => {
+        console.log(resp);
+        try {
+          setCookie("github-token", resp.data);
+          router.replace("/", undefined, { shallow: true });
+        } catch (error) {
+          console.log(error);
+        }
+      });
     }
 
     if ("github-token" in cookies) {
       console.log("Found GitHub token");
-      setisAuthenticatedGithub(true);
+      setIsGithubAuth(true);
       return;
     }
   });
@@ -93,10 +70,10 @@ export function Authentication() {
                 <Text fontWeight={700} fontSize={"3xl"}>
                   GitHub
                 </Text>
-                {!isAuthenticatedGithub ? (
+                {!isGithubAuth ? (
                   <div>
                     <NextLink
-                      href={`https://github.com/login/oauth/authorize?client_id=${process.env.NEXT_PUBLIC_CLIENT_ID}`}
+                      href={`https://github.com/login/oauth/authorize?client_id=${process.env.NEXT_PUBLIC_GITHUB_OAUTH_CLIENT_ID}`}
                       passHref
                     >
                       <Button
@@ -104,7 +81,7 @@ export function Authentication() {
                         target="_blank"
                         leftIcon={<Icon as={AiFillGithub} h={5} w={5} />}
                         // disabled={isAuthenticated(cookies, 'github')}
-                        disabled={isAuthenticatedGithub}
+                        disabled={isGithubAuth}
                       >
                         GitHub
                       </Button>

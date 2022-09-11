@@ -138,6 +138,9 @@ const GraphView: FC<Props> = (props) => {
           onClick={handleTogglePlay}
           isDisabled={!cosmoGraphRef.current}
           leftIcon={<Icon w={8} h={8} as={isPlaying ? PauseIcon : PlayIcon} />}
+          size={"sm"}
+          width={"100px"}
+          justifyContent={"flex-start"}
         >
           {isPlaying ? "Pause" : "Play"}
         </Button>
