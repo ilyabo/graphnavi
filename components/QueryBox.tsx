@@ -199,7 +199,7 @@ const QueryBox: FC<Props> = (props) => {
           {/*  _placeholder={{ color: "gray.400" }}*/}
           {/*/>*/}
           <Button
-            zIndex={2}
+            zIndex={10}
             isDisabled={loading}
             size={"sm"}
             leftIcon={<Icon as={PlayIcon} h={5} w={5} />}
@@ -217,6 +217,7 @@ const QueryBox: FC<Props> = (props) => {
           >
             Run
           </Button>
+
           {loading ? (
             <Flex
               position={"absolute"}

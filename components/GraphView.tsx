@@ -18,8 +18,6 @@ type Props = {
 const GraphView: FC<Props> = (props) => {
   const { graph, nodeFields, edgeFields } = props;
   const theme = useTheme();
-  // const showNodeLabel = true;
-  const nodeLabelSize = 10;
 
   const graphConfig = useMemo((): GraphConfigInterface<
     GraphNode,
@@ -47,11 +45,16 @@ const GraphView: FC<Props> = (props) => {
       events: {
         onClick: (node: Node<GraphNode> | undefined) => {
           console.log("Clicked node: ", node);
-          setHoverNode(node);
+          if (cosmoGraphRef.current) {
+            setHoverNode(node);
+            // if (node) {
+            //   cosmoGraphRef.current?.selectNodeById(node.id);
+            // }
+          }
         },
       },
     };
-  }, []);
+  }, [nodeFields, edgeFields]);
   const handleNodeHover = (info: any) => {
     const { object } = info;
     // console.log(object);
