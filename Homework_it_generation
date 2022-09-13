@@ -1,0 +1,3 @@
+btc_cource = int(input("What is Bitcoin price today? "))
+you_have = int(input("How much $ do you have? "))
+print("You can buy ", you_have/btc_cource, "BTC")
