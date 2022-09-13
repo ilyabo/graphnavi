@@ -2,7 +2,8 @@
 
 Network analysis and visualization tool: [graphnavi.vercel.app](https://graphnavi.vercel.app/)
 
-![image](https://user-images.githubusercontent.com/351828/188310445-91655c7d-1b60-46d4-b000-b72acd4d2be1.png)
+![Graphnavi](https://user-images.githubusercontent.com/351828/189877313-dcbc517c-fd31-49c9-b09d-fecffb8724c6.jpg)
+
 
 https://user-images.githubusercontent.com/351828/188310397-9a14b73f-41ba-47e3-b1df-88fa0b400cd3.mp4
 
@@ -41,6 +42,6 @@ yarn dev
 
 ## License
 
-GraphNAVI is free non-commercial usage. If you want to use it in a commercial project, please reach out to us.
+GraphNAVI is free non-commercial usage. If you want to use it in a commercial project, please reach out to ilya@boyandin.me.
 
 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">Creative Commons Attribution-NonCommercial 4.0 International License</a>.
