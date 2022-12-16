@@ -3,11 +3,7 @@ import { Box, Button, Flex, Icon, Text, useTheme } from "@chakra-ui/react";
 import { PauseIcon, PlayIcon } from "@heroicons/react/solid";
 import { EdgeFields, Graph, GraphEdge, GraphNode, NodeFields } from "../types";
 import TooltipBox from "./TooltipBox";
-import {
-  Graph as CosmoGraph,
-  GraphConfigInterface,
-  Node,
-} from "@cosmograph/cosmos";
+import { Graph as CosmoGraph, GraphConfigInterface } from "@cosmograph/cosmos";
 
 type Props = {
   graph?: Graph;
@@ -43,7 +39,7 @@ const GraphView: FC<Props> = (props) => {
         ? { linkWidth: (edge) => Number(edge.width ?? 0) }
         : null),
       events: {
-        onClick: (node: Node<GraphNode> | undefined) => {
+        onClick: (node: GraphNode | undefined) => {
           console.log("Clicked node: ", node);
           if (cosmoGraphRef.current) {
             setHoverNode(node);
@@ -81,6 +77,11 @@ const GraphView: FC<Props> = (props) => {
     }
   }, [canvasRef.current, cosmoGraphRef.current, graph]);
   const [isPlaying, setIsPlaying] = useState(true);
+  const handleFit = () => {
+    if (cosmoGraphRef.current) {
+      cosmoGraphRef.current?.fitView();
+    }
+  };
   const handleTogglePlay = () => {
     if (cosmoGraphRef.current) {
       if (isPlaying) {
@@ -91,7 +92,7 @@ const GraphView: FC<Props> = (props) => {
       setIsPlaying(!isPlaying);
     }
   };
-  const [hoverNode, setHoverNode] = useState<Node<GraphNode>>();
+  const [hoverNode, setHoverNode] = useState<GraphNode>();
 
   const handleNodeMouseLeave = () => {
     setHoverNode(undefined);
@@ -132,6 +133,18 @@ const GraphView: FC<Props> = (props) => {
       )}
       {hoverNode ? <TooltipBox title={"Node"} values={hoverNode} /> : null}
       <Box position={"absolute"} top={2} right={2}>
+        <Button
+          variant="ghost"
+          color="gray.400"
+          onClick={handleFit}
+          isDisabled={!cosmoGraphRef.current}
+          // leftIcon={<Icon w={8} h={8} as={isPlaying ? PauseIcon : PlayIcon} />}
+          size={"sm"}
+          // width={"100px"}
+          justifyContent={"flex-start"}
+        >
+          Fit
+        </Button>
         <Button
           variant="ghost"
           color="gray.400"
