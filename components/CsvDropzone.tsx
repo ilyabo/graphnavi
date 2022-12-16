@@ -7,6 +7,7 @@ import { useDuckConn } from "../lib/useDuckConn";
 import { createTableFromFile, makeTableName, TableInfo } from "../lib/duckdb";
 import FileCard from "./FileCard";
 import { GistResults } from "../types";
+import { useAppStore } from "../lib/Store";
 
 const ACCEPTED_FORMATS = [
   ".csv",
@@ -18,7 +19,6 @@ const ACCEPTED_FORMATS = [
 
 export type Props = {
   tables?: TableInfo[];
-  csvFiles?: GistResults["csvFiles"];
   isInvalid?: boolean;
   onReset: () => void;
   onChange: (result: TableInfo) => void;
@@ -27,15 +27,10 @@ export type Props = {
 };
 
 const CsvDropzone: FC<Props> = (props) => {
-  const {
-    csvFiles,
-    tables,
-    isInvalid,
-    onError,
-    onTableCreated,
-    onChange,
-    onReset,
-  } = props;
+  const { tables, isInvalid, onError, onTableCreated, onChange, onReset } =
+    props;
+
+  const csvFiles = useAppStore((state) => state.gistResults?.csvFiles);
 
   const handleReset = async () => {
     // await maybeDropTable(tables, duckConn);

@@ -4,6 +4,7 @@ import { useToast } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
 import MainView from "../../components/MainView";
 import { GistResults } from "../../types";
+import { useAppStore } from "../../lib/Store";
 
 type Props = {
   // nothing yet
@@ -14,7 +15,9 @@ const EDGES_QUERY_FILE_NAME = "edges.sql";
 
 const GistPage: FC<Props> = (props) => {
   const session = useSession();
-  const [gistResults, setGistResults] = useState<GistResults>({});
+
+  const gistResults = useAppStore((state) => state.gistResults);
+  const addToGistResults = useAppStore((state) => state.addToGistResults);
 
   const router = useRouter();
   const { id: gistId } = router.query;
@@ -24,9 +27,8 @@ const GistPage: FC<Props> = (props) => {
   useEffect(() => {
     if (gistId) {
       (async () => {
-        let results: GistResults = { isDataLoading: true };
+        addToGistResults({ isDataLoading: true });
         try {
-          setGistResults(results);
           // const token = await fetchGithubToken();
           const result = await fetchUrl(
             `https://api.github.com/gists/${gistId}`
@@ -48,19 +50,14 @@ const GistPage: FC<Props> = (props) => {
               )
           );
 
+          const csvFiles: GistResults["csvFiles"] = {};
           for (const { filename, language, data } of files) {
             if (filename.toLowerCase() === NODES_QUERY_FILE_NAME) {
-              results = { ...results, nodesQuery: data };
-              setGistResults(results);
+              addToGistResults({ nodesQuery: data });
             } else if (filename.toLowerCase() === EDGES_QUERY_FILE_NAME) {
-              results = { ...results, edgesQuery: data };
-              setGistResults(results);
+              addToGistResults({ edgesQuery: data });
             } else if (language === "CSV") {
-              results = {
-                ...results,
-                csvFiles: { ...results?.csvFiles, [filename]: data },
-              };
-              setGistResults(results);
+              addToGistResults({ csvFiles: { [filename]: data } });
             }
           }
         } catch (e) {
@@ -73,13 +70,13 @@ const GistPage: FC<Props> = (props) => {
             isClosable: true,
           });
         } finally {
-          setGistResults({ ...results, isDataLoading: false });
+          addToGistResults({ isDataLoading: false });
         }
       })();
     }
   }, [gistId]);
 
-  return <MainView gistResults={gistResults} />;
+  return <MainView />;
 };
 
 function shouldFetchFile({ filename, language }: Record<string, any>) {

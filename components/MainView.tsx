@@ -9,24 +9,19 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Mosaic, MosaicNode } from "react-mosaic-component";
 import GraphView from "./GraphView";
 import { Table } from "apache-arrow";
-import {
-  EdgeFields,
-  GistResults,
-  GraphEdge,
-  GraphNode,
-  NodeFields,
-} from "../types";
+import { EdgeFields, GraphEdge, GraphNode, NodeFields } from "../types";
 import FilesArea from "./FilesArea";
 import QueryBox from "./QueryBox";
 import QueryHelp from "./QueryHelp";
 import "react-mosaic-component/react-mosaic-component.css";
+import { useAppStore } from "../lib/Store";
+import ErrorBoundary from "./ErrorBoundary";
 
-export interface Props {
-  gistResults?: GistResults;
-}
+export interface Props {}
 
 const MainView: React.FC<Props> = (props) => {
-  const { gistResults } = props;
+  const nodesQuery = useAppStore((state) => state.gistResults?.nodesQuery);
+  const edgesQuery = useAppStore((state) => state.gistResults?.edgesQuery);
   const [nodeFields, setNodeFields] = useState<Record<NodeFields, boolean>>();
   const [edgeFields, setEdgeFields] = useState<Record<EdgeFields, boolean>>();
   const toast = useToast();
@@ -119,9 +114,7 @@ const MainView: React.FC<Props> = (props) => {
   };
 
   const views: { [viewId: string]: JSX.Element } = {
-    filesArea: (
-      <FilesArea csvFiles={gistResults?.csvFiles} onError={handleError} />
-    ),
+    filesArea: <FilesArea onError={handleError} />,
 
     nodesQueryBox: (
       <>
@@ -129,7 +122,7 @@ const MainView: React.FC<Props> = (props) => {
           Nodes
         </Heading>
         <QueryBox
-          query={gistResults?.nodesQuery ?? ""}
+          query={nodesQuery ?? ""}
           id={"nodes"}
           isValidResult={validateNodes}
           onResult={handleNodeResults}
@@ -161,7 +154,7 @@ FROM my_nodes_table`}
           Edges
         </Heading>
         <QueryBox
-          query={gistResults?.edgesQuery ?? ""}
+          query={edgesQuery ?? ""}
           id={"edges"}
           isValidResult={validateEdges}
           onResult={handleEdgeResults}
@@ -188,11 +181,13 @@ FROM my_edges_table`}
       </>
     ),
     graphView: (
-      <GraphView
-        graph={graph}
-        nodeFields={nodeFields}
-        edgeFields={edgeFields}
-      />
+      <ErrorBoundary>
+        <GraphView
+          graph={graph}
+          nodeFields={nodeFields}
+          edgeFields={edgeFields}
+        />
+      </ErrorBoundary>
     ),
   };
 

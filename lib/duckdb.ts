@@ -36,7 +36,7 @@ export async function createTableFromFile(
   const inputTableName = makeTableName(inputFileName);
 
   await duckConn.conn.query(`
-       CREATE TABLE ${inputTableName} AS SELECT * FROM '${inputFileName}'
+       CREATE OR REPLACE TABLE ${inputTableName} AS SELECT * FROM '${inputFileName}'
     `);
 
   const res = await duckConn.conn.query(

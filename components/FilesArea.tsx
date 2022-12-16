@@ -3,27 +3,25 @@ import { Heading } from "@chakra-ui/react";
 import dynamic from "next/dynamic";
 import { TableInfo } from "../lib/duckdb";
 import SpinnerPane from "./SpinnerPane";
-import { GistResults } from "../types";
 
 const CsvDropzone = dynamic(() => import("./CsvDropzone"), {
   ssr: false,
 });
 
 type Props = {
-  csvFiles?: GistResults["csvFiles"];
   onError: (message: string) => void;
 };
 
 const FilesArea: FC<Props> = (props) => {
-  const { csvFiles, onError } = props;
+  const { onError } = props;
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
   }, []);
-  const [value, setValue] = useState<TableInfo[]>([]);
-  console.log("value", value);
+
+  const [tablesInfo, setTablesInfo] = useState<TableInfo[]>([]);
   const handleTableCreated = (tables: TableInfo[]) => {
-    setValue([...value, ...tables]);
+    setTablesInfo([...tablesInfo, ...tables]);
   };
   return (
     <>
@@ -33,8 +31,7 @@ const FilesArea: FC<Props> = (props) => {
       {mounted ? (
         <Suspense fallback={<SpinnerPane h={"100%"} />}>
           <CsvDropzone
-            csvFiles={csvFiles}
-            tables={value}
+            tables={tablesInfo}
             onTableCreated={handleTableCreated}
             onChange={(result) => {
               console.log("onChange", result);
