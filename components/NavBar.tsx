@@ -8,6 +8,7 @@ import {
   Icon,
   Menu,
   MenuButton,
+  MenuItem,
   MenuList,
   Spacer,
   Text,
@@ -16,12 +17,15 @@ import { ChevronDownIcon } from "@chakra-ui/icons";
 import { AiFillGithub } from "react-icons/ai";
 import { useSession } from "next-auth/react";
 import NewWindow from "react-new-window";
+import { useRouter } from "next/router";
+import Link from "next/link";
 
 type Props = {
   // nothing yet
 };
 
 const NavBar: FC<Props> = (props) => {
+  const router = useRouter();
   const session = useSession();
   const [showLogin, setShowLogin] = useState(false);
   const loginWindowRef = React.useRef<Window | null>();
@@ -46,13 +50,35 @@ const NavBar: FC<Props> = (props) => {
         // maxW={"6xl"}
       >
         <Flex direction={"row"} alignItems={"center"} gap={5}>
-          <Heading fontSize="2xl" display={"flex"}>
-            <Text color={"gray.500"}>Graph</Text>
-            <Text color={"gray.100"}>NAVI</Text>
-          </Heading>
+          <Link href={"/"}>
+            <Heading fontSize="2xl" display={"flex"} cursor="pointer">
+              <Text color={"gray.500"}>Graph</Text>
+              <Text color={"gray.100"}>NAVI</Text>
+            </Heading>
+          </Link>
           <Text fontSize="xs" color={"gray.500"}>
             Network analysis and visualization tool
           </Text>
+          <Menu>
+            <MenuButton
+              as={Button}
+              rightIcon={<ChevronDownIcon />}
+              size={"xs"}
+              disabled={false}
+            >
+              Examples
+            </MenuButton>
+            <MenuList>
+              <MenuItem
+                fontSize={"xs"}
+                onClick={() =>
+                  router.push("/gist/37872fdba08bddf54a021ffde85cad8f")
+                }
+              >
+                Les Miserables
+              </MenuItem>
+            </MenuList>
+          </Menu>
         </Flex>
         <Spacer />
         {/*<a*/}

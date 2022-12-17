@@ -28,16 +28,19 @@ const GraphView: FC<Props> = (props) => {
         repulsion: 0.5,
       },
       renderLinks: true,
-      // linkColor: link => link.color,
-      // nodeColor: node => node.color,
+      // linkColor: (link) => link.color,
+      // nodeColor: (node) => node.color,
       nodeSizeScale: 0.5,
-      ...(nodeFields?.[NodeFields.SIZE]
-        ? { nodeSize: (node) => Number(node.size ?? 0) }
-        : null),
+      // ...(nodeFields?.[NodeFields.SIZE]
+      //   ? { nodeSize: (node) => Number(node.size ?? 0) }
+      //   : () => 1),
+      nodeSize: (node) => Number(node.size ?? 1),
+
       linkWidthScale: 1,
-      ...(edgeFields?.[EdgeFields.WIDTH]
-        ? { linkWidth: (edge) => Number(edge.width ?? 0) }
-        : null),
+      // ...(edgeFields?.[EdgeFields.WIDTH]
+      //   ? { linkWidth: (edge) => Number(edge.width ?? 0) }
+      //   : null),
+      linkWidth: (edge) => Number(edge.width ?? 1),
       events: {
         onClick: (node: GraphNode | undefined) => {
           console.log("Clicked node: ", node);
@@ -51,6 +54,9 @@ const GraphView: FC<Props> = (props) => {
       },
     };
   }, [nodeFields, edgeFields]);
+  useEffect(() => {
+    handleFit();
+  }, [graph]);
   const handleNodeHover = (info: any) => {
     const { object } = info;
     // console.log(object);

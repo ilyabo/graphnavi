@@ -33,8 +33,8 @@ const MainView: React.FC<Props> = (props) => {
       direction: "row",
       first: {
         direction: "column",
-        first: "nodesQueryBox",
-        second: "edgesQueryBox",
+        second: "nodesQueryBox",
+        first: "edgesQueryBox",
         splitPercentage: 50,
       },
       second: "graphView",

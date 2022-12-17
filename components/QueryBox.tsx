@@ -53,6 +53,11 @@ const QueryBox: FC<Props> = (props) => {
       setQuery(props.query);
     }
   }, [props.query]);
+  // useEffect(() => {
+  //   if (duckConn?.conn && query) {
+  //     handleRun();
+  //   }
+  // }, [query, duckConn]);
   const [resultsInternal, setResultsInternal] = useState<Table>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
