@@ -2,11 +2,10 @@ import React, { FC, Fragment } from "react";
 import { opacify } from "../lib/utils";
 import { Flex, Grid, Text, useTheme } from "@chakra-ui/react";
 import { GraphNode } from "../types";
-import { Node } from "@cosmograph/cosmos";
 
 type Props = {
   title: string;
-  values: Node<GraphNode>;
+  values: GraphNode;
 };
 
 const TooltipBox: FC<Props> = (props) => {

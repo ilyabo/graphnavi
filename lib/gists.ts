@@ -3,53 +3,6 @@ import axios from "axios";
 // Files we need data.csv, edges.sql, nodes.sql
 const FILES = ["data.csv", "edges.sql", "nodes.sql"];
 
-export async function fetchGithubToken() {
-  const code = (
-    await axios({
-      url: `https://github.com/login/oauth/authorize?client_id=${process.env.NEXT_PUBLIC_GITHUB_OAUTH_CLIENT_ID}`,
-      method: "GET",
-    })
-  ).data.text();
-  console.log(code);
-
-  const res: Response = await fetch(
-    "https://github.com/login/oauth/access_token",
-    {
-      method: "POST",
-      // headers: new Headers({ "Content-Type": "application/json" }),
-      // credentials: "same-origin",
-      body: JSON.stringify({
-        client_id: process.env.NEXT_PUBLIC_GITHUB_OAUTH_CLIENT_ID,
-        client_secret: process.env.NEXT_PUBLIC_CLIENT_SECRET,
-        code,
-      }),
-    }
-  );
-  if (!res.ok) {
-    console.error("Error in postData");
-    let message = res.statusText;
-    try {
-      message = (await res.json()).error.message;
-      console.error(message);
-    } finally {
-      throw new Error(message);
-    }
-  }
-
-  return res.json();
-
-  //
-  // const resp = fetch("https://github.com/login/oauth/access_token", {
-  //   params: {
-  //     client_id: process.env.NEXT_PUBLIC_GITHUB_OAUTH_CLIENT_ID,
-  //     client_secret: process.env.NEXT_PUBLIC_CLIENT_SECRET,
-  //     code,
-  //   },
-  // });
-  // const content = await resp.data.json();
-  // return resp;
-}
-
 async function readFilesContent(fileUrl: string) {
   const resp = await axios({
     url: fileUrl,
